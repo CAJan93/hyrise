@@ -7,7 +7,7 @@ namespace opossum {
 
 void CreateUniqueConstraintsRule::apply_to(const std::shared_ptr<AbstractLQPNode>& lqp) const {
 
-  for(size_t i = 0; i < 1000; ++i) {
+  for(size_t i = 0; i < 100; ++i) {
     Assert(!lqp->right_input(), "Did not expect right input node");
     if(!dynamic_pointer_cast<AbstractNonQueryNode>(lqp->left_input())) {
       const auto& unique_constraints = lqp->left_input()->unique_constraints();
