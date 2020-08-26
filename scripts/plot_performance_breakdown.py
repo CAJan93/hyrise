@@ -106,7 +106,7 @@ rule_benchmark_df.iloc[:, 1:] = rule_benchmark_df.iloc[:, 1:].apply(lambda x: x 
 
 # aggregate all rule durations below the threshold
 rule_benchmark_df.insert(0, "Other Rules", 0)
-threshold = 0.00
+threshold = 0.05
 for index, benchmark in rule_benchmark_df[sum_optimizer_rule_durations.keys()].iterrows():
     for rule_name, rule_duration in benchmark.iteritems():
         if rule_duration < threshold:
