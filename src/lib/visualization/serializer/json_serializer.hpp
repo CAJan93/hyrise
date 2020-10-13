@@ -124,11 +124,13 @@ class JsonSerializer {
   template <typename T>
   static void with_any(jsonVal& data, const std::string& key, const T& val);
 
-  template <typename T>
-  static T get_entry_from_json(const jsonView& value, const std::string& key);
-
+  // asserts that the json value hold the a key with a value T
   template <typename T>
   static void key_of_type_exists(const jsonView& value, const std::string& key);
+
+  // retrieve data of type T from Json at key
+  template <typename T>
+  static T get_entry_from_json(const jsonView& value, const std::string& key);
 
   using string_t =
       std::__cxx11::basic_string<char, std::char_traits<char>, boost::container::pmr::polymorphic_allocator<char>>;
@@ -151,9 +153,46 @@ class JsonSerializer {
   static std::string to_json_str(const T& object);
 };
 
-// const std::string JsonSerializer::newline_spacer = 
+template <typename T>
+void JsonSerializer::key_of_type_exists(const jsonView& value, const std::string& key) {
+  Assert(value.KeyExists(key), JOIN_TO_STR("key '", key, "' does not exist in json ", value.WriteReadable()));
+  if constexpr (is_integral<T>::value) {
+  } else if constexpr (std::is_floating_point<T>::value) {
+    Assert(value.GetObject(key).IsFloatingPointType(),
+           JOIN_TO_STR("key '", key, "' does not point to a floating point value in json", newline_spacer,
+                       value.WriteReadable()));
+  } else if constexpr (std::is_same<bool, T>::value) {
+    Assert(value.GetObject(key).IsBool(), JOIN_TO_STR("key '", key, "' does not point to a boolean value in json",
+                                                      newline_spacer, value.WriteReadable()));
+  } else if constexpr (std::is_same<std::string, T>::value || std::is_same<string_t, T>::value) {
+    Assert(value.GetObject(key).IsString(), JOIN_TO_STR("key '", key, "' does not point to a string value in json",
+                                                        newline_spacer, value.WriteReadable()));
+  } else if constexpr (std::is_same<jsonView, T>::value) {
+    Assert(value.GetObject(key).IsObject(), JOIN_TO_STR("key '", key, "' does not point to an object value in json",
+                                                        newline_spacer, value.WriteReadable()));
+  } else {
+    Fail(JOIN_TO_STR("Unable to retrieve data from object of type ", typeid(T).name(), newline_spacer, "Data was",
+                     newline_spacer, value.WriteReadable(), newline_spacer, "Key was: '", key, "'"));
+  }
+}
 
-// sequence for
+template <typename T>
+T JsonSerializer::get_entry_from_json(const jsonView& value, const std::string& key) {
+  key_of_type_exists<T>(value, key);
+  if constexpr (is_integral<T>::value) {
+    return static_cast<T>(value.GetInteger(key));
+  } else if constexpr (std::is_floating_point<T>::value) {
+    return static_cast<T>(value.GetDouble(key));
+  } else if constexpr (std::is_same<bool, T>::value) {
+    return static_cast<T>(value.GetBool(key));
+  } else if constexpr (std::is_same<std::string, T>::value || std::is_same<string_t, T>::value) {
+    return static_cast<T>(value.GetString(key));
+  } else {
+    Fail(JOIN_TO_STR("Unable to retrieve data from object of type ", typeid(T).name(), newline_spacer, "Data was",
+                     newline_spacer, value.WriteReadable(), newline_spacer, "Key was: '", key, "'"));
+  }
+}
+
 template <typename T, T... S, typename F>
 constexpr void JsonSerializer::for_sequence(std::integer_sequence<T, S...>, F&& f) {
   using unpack_t = int[];
@@ -162,37 +201,25 @@ constexpr void JsonSerializer::for_sequence(std::integer_sequence<T, S...>, F&& 
 
 template <>
 inline int JsonSerializer::as_any<int>(const jsonView& value, const std::string& key) {
-  AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
-  AssertInput(value.GetObject(key).IsIntegerType(),
-              JOIN_TO_STR("key ", key, " is not an integer type", newline_spacer, "JSON: ", value.WriteReadable()));
+  key_of_type_exists<int>(value, key);
   return value.GetInteger(key);
 }
 
 template <>
 inline bool JsonSerializer::as_any<bool>(const jsonView& value, const std::string& key) {
-  AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
-  AssertInput(value.GetObject(key).IsBool(),
-              JOIN_TO_STR("key ", key, " is not a boolean", newline_spacer, "JSON: ", value.WriteReadable()));
+  key_of_type_exists<bool>(value, key);
   return value.GetBool(key);
 }
 
 template <>
 inline std::string JsonSerializer::as_any<std::string>(const jsonView& value, const std::string& key) {
-  AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
-  AssertInput(value.GetObject(key).IsString(),
-              JOIN_TO_STR("key ", key, " is not of type string", newline_spacer, "JSON: ", value.WriteReadable()));
+  key_of_type_exists<std::string>(value, key);
   return value.GetString(key);
 }
 
 template <>
 inline double JsonSerializer::as_any<double>(const jsonView& value, const std::string& key) {
-  AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
-  AssertInput(value.GetObject(key).IsFloatingPointType(), JOIN_TO_STR("key ", key, " is not a floting point type",
-                                                                      newline_spacer, "JSON: ", value.WriteReadable()));
+  key_of_type_exists<double>(value, key);
   return value.GetDouble(key);
 }
 
@@ -208,9 +235,8 @@ inline double JsonSerializer::as_any<double>(const jsonView& value, const std::s
 template <>
 inline AllTypeVariant JsonSerializer::as_any<AllTypeVariant>(const jsonView& value, const std::string& key) {
   // TODO(CAJan93): Check if key val_t and key exist
-  Assert(value.GetObject(key).KeyExists("val_t"), JOIN_TO_STR("val_t does not exist in json ", value.WriteReadable()));
-  Assert(value.GetObject(key).GetObject("val_t").IsIntegerType(),
-         JOIN_TO_STR("val_t is not of integer type ", value.WriteReadable()));
+  key_of_type_exists<jsonView>(value, key);
+  key_of_type_exists<int>(value.GetObject(key), "val_t");
   const int value_t = value.GetObject(key).GetInteger("val_t");
   switch (value_t) {
     case 0:
@@ -218,22 +244,15 @@ inline AllTypeVariant JsonSerializer::as_any<AllTypeVariant>(const jsonView& val
     case 1:
     case 2:
       // use one convenience function for this
-      Assert(value.GetObject(key).KeyExists("val"), JOIN_TO_STR("val does not exist in json ", value.WriteReadable()));
-      Assert(value.GetObject(key).GetObject("val").IsIntegerType(),
-             JOIN_TO_STR("val is not of integer type ", value.WriteReadable()));
+      key_of_type_exists<int>(value.GetObject(key), "val");
       return value.GetObject(key).GetInteger("val");
     case 3:
     case 4:
-      Assert(value.GetObject(key).KeyExists("val"), JOIN_TO_STR("val does not exist in json ", value.WriteReadable()));
-      Assert(value.GetObject(key).GetObject("val").IsFloatingPointType(),
-             JOIN_TO_STR("val is not of integer type ", value.WriteReadable()));
+      key_of_type_exists<double>(value.GetObject(key), "val");
       return value.GetObject(key).GetDouble("val");
     case 5: {
-      Assert(value.GetObject(key).KeyExists("val"), JOIN_TO_STR("val does not exist in json ", value.WriteReadable()));
-      Assert(value.GetObject(key).GetObject("val").IsString(),
-             JOIN_TO_STR("val is not of integer type ", value.WriteReadable()));
-      const std::string s = value.GetObject(key).GetString("val");
-      return string_t(s);
+      key_of_type_exists<std::string>(value.GetObject(key), "val");
+      return string_t(value.GetObject(key).GetString("val"));
     }
 
     default:
@@ -302,12 +321,7 @@ inline T JsonSerializer::as_any(const jsonView& value, const std::string& key) {
     return smart_ptr_t(object_ptr);
   } else {
     if constexpr (std::is_enum<without_cv_t>::value) {
-      Assert(value.KeyExists(key),
-             JOIN_TO_STR("Unable to extract key '", key, "' from Json. Json is ", value.WriteReadable()));
-      Assert(value.GetObject(key).IsString(),
-             JOIN_TO_STR("Value at key '", key,
-                         "' is representing an enum. Value has to be of type string, but is not. Value is ",
-                         value.GetObject(key).WriteReadable(), "Json is ", value.WriteReadable()));
+      key_of_type_exists<std::string>(value, key);
       auto enum_opt = magic_enum::enum_cast<without_cv_t>(value.GetString(key));
       if (!enum_opt.has_value()) {
         Fail(JOIN_TO_STR("Unable to create enum of type ", typeid(without_cv_t).name(), "from string '",
@@ -317,7 +331,8 @@ inline T JsonSerializer::as_any(const jsonView& value, const std::string& key) {
     } else {
       if (value.GetObject(key).IsObject()) {
         if constexpr (has_member_properties<without_cv_t>::value) {
-          // handle nested object (pointer or non-pointer)
+          // handle nested object (pointer or non-pointer
+          key_of_type_exists<jsonVal>(value, key);
           jsonView sub_json = value.GetObject(key);
           without_cv_t sub_obj = from_json<without_cv_t>(sub_json);
           without_cv_t new_sub_obj{sub_obj};
@@ -390,6 +405,7 @@ inline T JsonSerializer::as_any(const jsonView& value, const std::string& key) {
           return vec;
         } else {
           // TODO(CAJan93): same case as above. Simplify!
+          key_of_type_exists<jsonVal>(value, key);
           jsonView sub_json = value.GetObject(key);
           without_cv_t sub_obj = from_json<without_cv_t>(sub_json);
           without_cv_t new_sub_obj{sub_obj};
