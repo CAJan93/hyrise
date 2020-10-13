@@ -124,8 +124,17 @@ class JsonSerializer {
   template <typename T>
   static void with_any(jsonVal& data, const std::string& key, const T& val);
 
+  template <typename T>
+  static T get_entry_from_json(const jsonView& value, const std::string& key);
+
+  template <typename T>
+  static void key_of_type_exists(const jsonView& value, const std::string& key);
+
   using string_t =
       std::__cxx11::basic_string<char, std::char_traits<char>, boost::container::pmr::polymorphic_allocator<char>>;
+
+  // used to align error messages after \n char
+  static inline const std::string newline_spacer = "\n           ";
 
  public:
   // unserialize function
@@ -142,6 +151,8 @@ class JsonSerializer {
   static std::string to_json_str(const T& object);
 };
 
+// const std::string JsonSerializer::newline_spacer = 
+
 // sequence for
 template <typename T, T... S, typename F>
 constexpr void JsonSerializer::for_sequence(std::integer_sequence<T, S...>, F&& f) {
@@ -152,36 +163,36 @@ constexpr void JsonSerializer::for_sequence(std::integer_sequence<T, S...>, F&& 
 template <>
 inline int JsonSerializer::as_any<int>(const jsonView& value, const std::string& key) {
   AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist           ", "JSON: ", value.WriteReadable()));
+              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
   AssertInput(value.GetObject(key).IsIntegerType(),
-              JOIN_TO_STR("key ", key, " is not an integer type\n           ", "JSON: ", value.WriteReadable()));
+              JOIN_TO_STR("key ", key, " is not an integer type", newline_spacer, "JSON: ", value.WriteReadable()));
   return value.GetInteger(key);
 }
 
 template <>
 inline bool JsonSerializer::as_any<bool>(const jsonView& value, const std::string& key) {
   AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist\n           ", "JSON: ", value.WriteReadable()));
+              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
   AssertInput(value.GetObject(key).IsBool(),
-              JOIN_TO_STR("key ", key, " is not a boolean\n           ", "JSON: ", value.WriteReadable()));
+              JOIN_TO_STR("key ", key, " is not a boolean", newline_spacer, "JSON: ", value.WriteReadable()));
   return value.GetBool(key);
 }
 
 template <>
 inline std::string JsonSerializer::as_any<std::string>(const jsonView& value, const std::string& key) {
   AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist\n           ", "JSON: ", value.WriteReadable()));
+              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
   AssertInput(value.GetObject(key).IsString(),
-              JOIN_TO_STR("key ", key, " is not of type string\n           ", "JSON: ", value.WriteReadable()));
+              JOIN_TO_STR("key ", key, " is not of type string", newline_spacer, "JSON: ", value.WriteReadable()));
   return value.GetString(key);
 }
 
 template <>
 inline double JsonSerializer::as_any<double>(const jsonView& value, const std::string& key) {
   AssertInput(value.KeyExists(key),
-              JOIN_TO_STR("key ", key, " does not exist\n           ", "JSON: ", value.WriteReadable()));
-  AssertInput(value.GetObject(key).IsFloatingPointType(),
-              JOIN_TO_STR("key ", key, " is not a floting point type\n           ", "JSON: ", value.WriteReadable()));
+              JOIN_TO_STR("key ", key, " does not exist", newline_spacer, "JSON: ", value.WriteReadable()));
+  AssertInput(value.GetObject(key).IsFloatingPointType(), JOIN_TO_STR("key ", key, " is not a floting point type",
+                                                                      newline_spacer, "JSON: ", value.WriteReadable()));
   return value.GetDouble(key);
 }
 
@@ -258,8 +269,8 @@ inline T JsonSerializer::as_any(const jsonView& value, const std::string& key) {
         without_cv_t sub_obj = from_json<without_cv_t>(sub_json);
         return sub_obj;
       }
-      Fail(JOIN_TO_STR("Unable to process key ", key, "\n           Key is a raw pointer with the type ",
-                       typeid(T).name(), "*. Current JSON object is\n", value.WriteReadable()));
+      Fail(JOIN_TO_STR("Unable to process key ", key, newline_spacer, "Key is a raw pointer with the type ",
+                       typeid(T).name(), "*. Current JSON object is", newline_spacer, value.WriteReadable()));
     } else {
       /*
       TODO(CAJan93): Hotfix. I think I get an issue here, because the
@@ -385,13 +396,13 @@ inline T JsonSerializer::as_any(const jsonView& value, const std::string& key) {
           return new_sub_obj;
         }
       } else {
-        Fail(JOIN_TO_STR("Unable to process key ", key, " Current JSON object is\n", value.WriteReadable()));
+        Fail(JOIN_TO_STR("Unable to process key ", key, " Current JSON object is", newline_spacer,
+                         value.WriteReadable()));
       }
     }
   }
   Fail("unreachable statement reached");
 }
-
 
 template <>
 inline void JsonSerializer::with_any<bool>(jsonVal& data, const std::string& key, const bool& val) {
@@ -595,12 +606,12 @@ T JsonSerializer::from_json(const jsonView& data) {
         case ExpressionType::Predicate: {
           Assert(data.KeyExists("type"),
                  JOIN_TO_STR("Json does not contain key 'type' required to cast AbstractPredicateExpression to "
-                             "concrete type\nJson is.\n           ",
-                             data.WriteReadable()));
+                             "concrete type",
+                             newline_spacer, "Json is.", newline_spacer, data.WriteReadable()));
           Assert(data.GetObject("type").IsString(),
                  JOIN_TO_STR("Json does contain key 'type' required to cast AbstractPredicateExpression to "
-                             "concrete type, but 'type' is not a string.\nJson is\n           ",
-                             data.WriteReadable()));
+                             "concrete type, but 'type' is not a string.",
+                             newline_spacer, "nJson is", newline_spacer, data.WriteReadable()));
           const std::string predicate_type = data.GetString("predicate_condition");
           const auto predicate_contition_opt = magic_enum::enum_cast<PredicateCondition>(predicate_type);
           // TODO(CAJan93): Write these statements as Asserts
@@ -645,7 +656,7 @@ T JsonSerializer::from_json(const jsonView& data) {
             }
 
             default:
-              Fail("Unknown ExpressionType\n");
+              Fail("Unknown ExpressionType");
           }
           // TODO(CAJan93): Implement AbstractPredicateExpression
           Fail("AbstractPredicateExpression currently not supported");
@@ -894,7 +905,7 @@ jsonVal JsonSerializer::to_json(const T& object) {
         default: {
           // TODO(CAJan93) remove below code
           auto t = abstract_op->type();
-          std::cout << "default OperatorType, with type \n           " << magic_enum::enum_name(t).data() << '\n';
+          std::cout << "default OperatorType, with type" << newline_spacer << magic_enum::enum_name(t).data() << '\n';
         }
       }
       return data;
@@ -957,7 +968,7 @@ jsonVal JsonSerializer::to_json(const T& object) {
             }
 
             default:
-              Fail("Unknown ExpressionType\n");
+              Fail("Unknown ExpressionType");
               return data;
           }
         }
@@ -1007,13 +1018,12 @@ jsonVal JsonSerializer::to_json(const T& object) {
     std::cout << "type is " << magic_enum::enum_name(object.type()).data() << " is currently not supported.\n";
     return data;
   } else {
-    Fail(JOIN_TO_STR("\nunsupported type ", typeid(object).name(), "\n           typeid T: ", typeid(T).name(),
-                     "\n           typeid without_ref_cv_t: ", typeid(without_ref_cv_t).name()));
+    Fail(JOIN_TO_STR("unsupported type ", typeid(object).name(), newline_spacer, "typeid T: ", typeid(T).name(),
+                     newline_spacer, "typeid without_ref_cv_t: ", typeid(without_ref_cv_t).name()));
   }
   return data;
 }  // namespace opossum
 
-// TODO(CAJan93): remove this?
 template <typename T>
 std::string JsonSerializer::to_json_str(const T& object) {
   return to_json(object).View().WriteReadable();
