@@ -1,0 +1,11 @@
+84 MB with json serializer
+    after merge with master
+    86
+
+
+73 MB on master (f518e317)
+
+
+Serializer does not serialize any LQP expressions
+    That is okay, right
+    see e.g lin 966

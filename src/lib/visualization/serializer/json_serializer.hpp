@@ -50,6 +50,7 @@
 #include "../types/is_smart_ptr.hpp"
 #include "../types/is_vector.hpp"
 #include "has_member.hpp"
+#include "json_serializer_parent.hpp"
 #include "string.hpp"
 
 namespace opossum {
@@ -72,8 +73,6 @@ class PredicateNode;
 class TableScan;
 class Validate;
 class ValueExpression;
-using jsonVal = Aws::Utils::Json::JsonValue;
-using jsonView = Aws::Utils::Json::JsonView;
 
 // TODO(CAJan93): Remove this function. This is from assert.hpp
 template <bool b>
@@ -86,20 +85,7 @@ struct StaticAssert<true> {
   static void stat_assert(const std::string& msg) { (void)msg; }
 };
 
-// TODO(CAJan93): Remove this function. This is from helper.hpp
-/**
- * Joins the provided arguments into a string using a stringstream.
- * @param args The values to join into a string
- * @return Returns a string
- */
-inline constexpr auto JOIN_TO_STR = [](auto... args) -> std::string {
-  std::stringstream strs;
-  strs << std::boolalpha;
-  (strs << ... << args);
-  return strs.str();
-};
-
-class JsonSerializer {
+class JsonSerializer : public JsonSerializerParent {
   /***
   * convert a vector<T> into a json object
   * {
@@ -112,10 +98,6 @@ class JsonSerializer {
   template <typename T>
   static jsonVal vec_to_json(const std::vector<T>& vec);
 
-  // sequence for
-  template <typename T, T... S, typename F>
-  static constexpr void for_sequence(std::integer_sequence<T, S...>, F&& f);
-
   // retrieve data from json
   template <typename T>
   static T as_any(const jsonView&, const std::string&);
@@ -124,91 +106,23 @@ class JsonSerializer {
   template <typename T>
   static void with_any(jsonVal& data, const std::string& key, const T& val);
 
-  // asserts that the json value hold the a key with a value T
-  template <typename T>
-  static void key_of_type_exists(const jsonView& value, const std::string& key);
-
-  // retrieve data of type T from Json at key
-  template <typename T>
-  static T get_entry_from_json(const jsonView& value, const std::string& key);
-
-  // represnets the different expression types
-  enum class PredicateConditionExpression { Between, BinaryPredicate, In, IsNull };
-
-  // mapps a PredicateCondition to the different Expression types
-  static JsonSerializer::PredicateConditionExpression resolve_predicate_condition(const PredicateCondition pred_cond);
-
-  // alias for "boost string"
-  using string_t =
-      std::__cxx11::basic_string<char, std::char_traits<char>, boost::container::pmr::polymorphic_allocator<char>>;
-
-  // used to align error messages after \n char
-  static inline const std::string newline_spacer = "\n           ";
-
  public:
-  // unserialize function
+  // deserialize
   template <typename T>
   static T from_json(const jsonView& data);
 
+  // serialize from string. Wrapper for from_json
   template <typename T>
   static auto from_json_str(const std::string& json_str);
 
+  // serialize
   template <typename T>
   static jsonVal to_json(const T& object);
 
+  // serialize to string. Wrapper for to_json
   template <typename T>
   static std::string to_json_str(const T& object);
 };
-
-// TODO(CAJan93): write to separate file
-template <typename T>
-void JsonSerializer::key_of_type_exists(const jsonView& value, const std::string& key) {
-  Assert(value.KeyExists(key), JOIN_TO_STR("key '", key, "' does not exist in json ", value.WriteReadable()));
-  if constexpr (is_integral<T>::value) {
-  } else if constexpr (std::is_floating_point<T>::value) {
-    Assert(value.GetObject(key).IsFloatingPointType(),
-           JOIN_TO_STR("value at key '", key, "' is not of floating point type in json", newline_spacer,
-                       value.WriteReadable()));
-  } else if constexpr (std::is_same<bool, T>::value) {
-    Assert(value.GetObject(key).IsBool(), JOIN_TO_STR("value of key '", key, "' is not of boolean type in json",
-                                                      newline_spacer, value.WriteReadable()));
-  } else if constexpr (std::is_same<std::string, T>::value || std::is_same<string_t, T>::value) {
-    Assert(value.GetObject(key).IsString(), JOIN_TO_STR("value of key '", key, "' is not of string type in json",
-                                                        newline_spacer, value.WriteReadable()));
-  } else if constexpr (std::is_same<jsonView, T>::value) {
-    Assert(value.GetObject(key).IsObject(),
-           JOIN_TO_STR("value of key '", key, "' is not an object in json", newline_spacer, value.WriteReadable()));
-  } else {
-    Fail(JOIN_TO_STR("Unable to retrieve data from object of type ", typeid(T).name(), newline_spacer, "Data was",
-                     newline_spacer, value.WriteReadable(), newline_spacer, "Key was: '", key, "'"));
-  }
-}
-
-// TODO(CAJan93): write to separate file
-template <typename T>
-T JsonSerializer::get_entry_from_json(const jsonView& value, const std::string& key) {
-  key_of_type_exists<T>(value, key);
-  if constexpr (is_integral<T>::value) {
-    return static_cast<T>(value.GetInteger(key));
-  } else if constexpr (std::is_floating_point<T>::value) {
-    return static_cast<T>(value.GetDouble(key));
-  } else if constexpr (std::is_same<bool, T>::value) {
-    return static_cast<T>(value.GetBool(key));
-  } else if constexpr (std::is_same<std::string, T>::value || std::is_same<string_t, T>::value) {
-    return static_cast<T>(value.GetString(key));
-  } else if constexpr (std::is_same<jsonView, T>::value) {
-    return value.GetObject(key);
-  } else {
-    Fail(JOIN_TO_STR("Unable to retrieve data from object of type ", typeid(T).name(), newline_spacer, "Data was",
-                     newline_spacer, value.WriteReadable(), newline_spacer, "Key was: '", key, "'"));
-  }
-}
-
-template <typename T, T... S, typename F>
-constexpr void JsonSerializer::for_sequence(std::integer_sequence<T, S...>, F&& f) {
-  using unpack_t = int[];
-  (void)unpack_t{(static_cast<void>(f(std::integral_constant<T, S>{})), 0)..., 0};
-}
 
 /**
  * AllTypeVariant is encoded like this:
@@ -605,21 +519,21 @@ T JsonSerializer::from_json(const jsonView& data) {
 
           const PredicateCondition pred_cond = predicate_contition_opt.value();
           switch (resolve_predicate_condition(pred_cond)) {
-            case JsonSerializer::PredicateConditionExpression::Between:
+            case JsonSerializerParent::PredicateConditionExpression::Between:
               return from_json<BetweenExpression*>(data);
 
-            case JsonSerializer::PredicateConditionExpression::BinaryPredicate:
+            case JsonSerializerParent::PredicateConditionExpression::BinaryPredicate:
               return from_json<BinaryPredicateExpression*>(data);
 
-            case JsonSerializer::PredicateConditionExpression::In:
+            case JsonSerializerParent::PredicateConditionExpression::In:
               return from_json<InExpression*>(data);
 
-            case JsonSerializer::PredicateConditionExpression::IsNull:
+            case JsonSerializerParent::PredicateConditionExpression::IsNull:
               return from_json<IsNullExpression*>(data);
 
             default:
               Fail(JOIN_TO_STR("Unable to convert PredicateConditionExpression ",
-                               magic_enum::enum_name<JsonSerializer::PredicateConditionExpression>(
+                               magic_enum::enum_name<JsonSerializerParent::PredicateConditionExpression>(
                                    resolve_predicate_condition(pred_cond))
                                    .data()));
           }
@@ -894,29 +808,29 @@ jsonVal JsonSerializer::to_json(const T& object) {
           const auto pred = dynamic_cast<AbstractPredicateExpression*>(object);
           std::cout << "abstract predicate" << std::endl;  // TODO(CAJan93): Remove debug msg
           switch (resolve_predicate_condition(pred->predicate_condition)) {
-            case JsonSerializer::PredicateConditionExpression::Between: {
+            case JsonSerializerParent::PredicateConditionExpression::Between: {
               const auto pred_between = dynamic_cast<BetweenExpression*>(object);
               return to_json<BetweenExpression>(*pred_between);
             }
 
-            case JsonSerializer::PredicateConditionExpression::BinaryPredicate: {
+            case JsonSerializerParent::PredicateConditionExpression::BinaryPredicate: {
               const auto pred_binary = dynamic_cast<BinaryPredicateExpression*>(object);
               return to_json<BinaryPredicateExpression>(*pred_binary);
             }
 
-            case JsonSerializer::PredicateConditionExpression::In: {
+            case JsonSerializerParent::PredicateConditionExpression::In: {
               const auto pred_in = dynamic_cast<InExpression*>(object);
               return to_json<InExpression>(*pred_in);
             }
 
-            case JsonSerializer::PredicateConditionExpression::IsNull: {
+            case JsonSerializerParent::PredicateConditionExpression::IsNull: {
               const auto pred_null = dynamic_cast<IsNullExpression*>(object);
               return to_json<IsNullExpression>(*pred_null);
             }
 
             default:
               Fail(JOIN_TO_STR("Unable to convert PredicateConditionExpression ",
-                               magic_enum::enum_name<JsonSerializer::PredicateConditionExpression>(
+                               magic_enum::enum_name<JsonSerializerParent::PredicateConditionExpression>(
                                    resolve_predicate_condition(pred->predicate_condition))
                                    .data()));
           }

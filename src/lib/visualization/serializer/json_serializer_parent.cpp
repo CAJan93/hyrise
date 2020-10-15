@@ -1,4 +1,4 @@
-#include "json_serializer.hpp"
+#include "json_serializer_parent.hpp"
 
 #include <iostream>
 
@@ -6,7 +6,7 @@
 #include "../../utils/assert.hpp"
 
 namespace opossum {
-JsonSerializer::PredicateConditionExpression JsonSerializer::resolve_predicate_condition(
+JsonSerializerParent::PredicateConditionExpression JsonSerializerParent::resolve_predicate_condition(
     const PredicateCondition pred_cond) {
   switch (pred_cond) {
     case PredicateCondition::BetweenExclusive:

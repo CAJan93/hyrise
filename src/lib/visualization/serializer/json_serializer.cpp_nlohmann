@@ -1,0 +1,166 @@
+#include <string>
+#include <vector>
+
+#include "../../operators/get_table.hpp"
+#include "../../operators/validate.hpp"
+#include "../../utils/assert.hpp"
+#include "json_serializer.hpp"
+
+#include <nlohmann/json.hpp>
+
+/**
+ {
+        "_left_input":  {
+                "_name":        "lineitem",
+                "_pruned_chunk_ids":    {
+                },
+                "_pruned_column_ids":   {
+                },
+                "_type":        "GetTable"
+        },
+        "_type":        "Validate"
+} */
+
+namespace nlohmann {
+template <>
+struct adl_serializer<opossum::ChunkID> {
+  static void to_json(json& j, const opossum::ChunkID& chunk_id) { j = static_cast<int>(chunk_id); }
+
+  static void from_json(const json& j, opossum::ChunkID& chunk_id) { chunk_id = j.get<int>(); }
+};
+
+template <>
+struct adl_serializer<opossum::ColumnID> {
+  static void to_json(json& j, const opossum::ColumnID& chunk_id) { j = static_cast<int>(chunk_id); }
+
+  static void from_json(const json& j, opossum::ColumnID& chunk_id) { chunk_id = j.get<int>(); }
+};
+
+template <>
+struct adl_serializer<opossum::OperatorType> {
+  static void to_json(json& j, const opossum::OperatorType& op_t) { j = magic_enum::enum_name(op_t).data(); }
+
+  static void from_json(const json& j, opossum::OperatorType& op_t) {
+    op_t = magic_enum::enum_cast<opossum::OperatorType>(j.get<std::string>()).value();
+  }
+};
+
+template <>
+struct adl_serializer<opossum::GetTable> {
+  static opossum::GetTable from_json(const json& j) {
+    return {j.at("_name").get<std::string>(), j.at("_pruned_chunk_ids").get<std::vector<opossum::ChunkID>>(),
+            j.at("_pruned_column_ids").get<std::vector<opossum::ColumnID>>()};
+  }
+
+  static void to_json(json& j, opossum::GetTable get_table) {
+    j["_name"] = get_table._name;
+    j["_pruned_chunk_ids"] = get_table._pruned_chunk_ids;
+    j["_pruned_column_ids"] = get_table._pruned_column_ids;
+  }
+};
+
+template <>
+struct adl_serializer<std::shared_ptr<const opossum::GetTable>> {
+  static std::shared_ptr<const opossum::GetTable> from_json(const json& j) {
+    return std::make_shared<opossum::GetTable>(j.at("_name").get<std::string>(),
+                                               j.at("_pruned_chunk_ids").get<std::vector<opossum::ChunkID>>(),
+                                               j.at("_pruned_column_ids").get<std::vector<opossum::ColumnID>>());
+  }
+
+  static void to_json(json& j, std::shared_ptr<const opossum::GetTable> get_table) {
+    j["_name"] = get_table->_name;
+    j["_pruned_chunk_ids"] = get_table->_pruned_chunk_ids;
+    j["_pruned_column_ids"] = get_table->_pruned_column_ids;
+  }
+};
+
+
+template <>
+struct adl_serializer<std::shared_ptr<opossum::GetTable>> {
+  static std::shared_ptr<opossum::GetTable> from_json(const json& j) {
+    return std::make_shared<opossum::GetTable>(j.at("_name").get<std::string>(),
+                                               j.at("_pruned_chunk_ids").get<std::vector<opossum::ChunkID>>(),
+                                               j.at("_pruned_column_ids").get<std::vector<opossum::ColumnID>>());
+  }
+
+  static void to_json(json& j, std::shared_ptr<opossum::GetTable> get_table) {
+    j["_name"] = get_table->_name;
+    j["_pruned_chunk_ids"] = get_table->_pruned_chunk_ids;
+    j["_pruned_column_ids"] = get_table->_pruned_column_ids;
+  }
+};
+
+template <>
+struct adl_serializer<const std::shared_ptr<const opossum::AbstractOperator>&> {
+  static const std::shared_ptr<const opossum::AbstractOperator>& from_json(const json& j) {
+    const opossum::OperatorType op_t = magic_enum::enum_cast<opossum::OperatorType>(j["_type"]).value();
+    switch (op_t) {
+      case opossum::OperatorType::GetTable:
+        std::cout << "GetTable" << std::endl;
+        return adl_serializer<std::shared_ptr<const opossum::GetTable>>::from_json(j);
+
+      default:
+        Fail(magic_enum::enum_name(op_t).data());
+    }
+  }
+
+  static void to_json(json& j, const std::shared_ptr<const opossum::AbstractOperator>& abstract_op) {
+    switch (abstract_op->_type) {
+      case opossum::OperatorType::GetTable:
+        return adl_serializer<std::shared_ptr<const opossum::GetTable>>::to_json(
+            j, std::dynamic_pointer_cast<const opossum::GetTable>(abstract_op));
+
+      default:
+        Fail(magic_enum::enum_name(abstract_op->_type).data());
+    }
+  }
+};
+
+template <>
+struct adl_serializer<const std::shared_ptr<const opossum::AbstractOperator>> {
+  static std::shared_ptr<const opossum::AbstractOperator> from_json(const json& j) {
+    const opossum::OperatorType op_t = magic_enum::enum_cast<opossum::OperatorType>(j["_type"]).value();
+    switch (op_t) {
+      case opossum::OperatorType::GetTable:
+        std::cout << "GetTable" << std::endl;
+        return adl_serializer<std::shared_ptr<opossum::GetTable>>::from_json(j);
+
+      default:
+        Fail(magic_enum::enum_name(op_t).data());
+    }
+    return nullptr;
+  }
+
+  static void to_json(json& j, const std::shared_ptr<const opossum::AbstractOperator> abstract_op) {
+    switch (abstract_op->_type) {
+      case opossum::OperatorType::GetTable:
+        return adl_serializer<std::shared_ptr<opossum::GetTable>>::to_json(
+            j, std::dynamic_pointer_cast<opossum::GetTable>(abstract_op));
+
+      default:
+        Fail(magic_enum::enum_name(abstract_op->_type).data());
+    }
+  }
+};
+
+template <>
+struct adl_serializer<opossum::Validate> {
+  static opossum::Validate from_json(const json& j) {
+    const std::shared_ptr<opossum::AbstractOperator> abstract_op_shared_ptr =
+        j.at("_left_input").get<const std::shared_ptr<const opossum::AbstractOperator>>();
+    // auto validate_op_raw_ptr = dynamic_cast<opossum::Validate*>(abstract_op_shared_ptr.get());
+    // return *validate_op_raw_ptr;
+    return opossum::Validate{abstract_op_shared_ptr};
+  }
+
+  static void to_json(json& j, opossum::Validate validate) {
+    std::shared_ptr<const opossum::Validate> left_in =
+        std::shared_ptr<const opossum::Validate>(dynamic_cast<const opossum::Validate*>(validate._left_input.get()));
+    json left_in_json;
+    adl_serializer<const std::shared_ptr<const opossum::AbstractOperator>&>::to_json(
+        left_in_json, std::dynamic_pointer_cast<const opossum::AbstractOperator>(left_in));
+    j["_left_input"] = left_in_json;
+    j["_type"] = validate._type;
+  }
+};
+}  // namespace nlohmann

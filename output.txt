@@ -1,0 +1,102 @@
+[  0%] Built target lz4
+[  2%] Built target tpch_dbgen
+[  4%] Built target sqlparser
+[  4%] Built target generate-provider-hpp
+[  4%] Built target resourceLink
+[ 11%] Built target zstd
+[ 13%] Built target libjemalloc-build
+[ 34%] Built target tpcds_dbgen
+[ 34%] Built target AlwaysCheckGit
+Scanning dependencies of target hyrise_impl
+[ 34%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/cost_estimation/abstract_cost_estimator.cpp.o
+[ 34%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/cost_estimation/cost_estimator_logical.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/aggregate_expression.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/abstract_expression.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/case_expression.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/expression_utils.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/evaluation/expression_evaluator.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/function_expression.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/lqp_subquery_expression.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/list_expression.cpp.o
+[ 36%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/in_expression.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/pqp_column_expression.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/expression_functional.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/arithmetic_expression.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/create_view_node.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/value_expression.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/alias_node.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/expression/is_null_expression.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/aggregate_node.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/abstract_lqp_node.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/except_node.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/dummy_table_node.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/intersect_node.cpp.o
+[ 40%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/join_node.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/limit_node.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/lqp_translator.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/lqp_utils.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/predicate_node.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/mock_node.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/projection_node.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/sort_node.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/static_table_node.cpp.o
+[ 43%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/stored_table_node.cpp.o
+[ 45%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/union_node.cpp.o
+[ 45%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/logical_query_plan/update_node.cpp.o
+[ 45%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/abstract_aggregate_operator.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/aggregate_hash.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/aggregate_sort.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/delete.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/limit.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/operator_scan_predicate.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/projection.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/table_scan.cpp.o
+[ 47%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/table_scan/expression_evaluator_table_scan_impl.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/operators/validate.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/join_ordering/abstract_join_ordering_algorithm.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/join_ordering/dp_ccp.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/join_ordering/greedy_operator_ordering.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/join_ordering/join_graph.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/join_ordering/join_graph_builder.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/optimizer.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/abstract_rule.cpp.o
+[ 50%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/between_composition_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/chunk_pruning_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/column_pruning_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/dependent_group_by_reduction_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/expression_reduction_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/in_expression_rewrite_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/index_scan_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/join_ordering_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/join_predicate_ordering_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/predicate_merge_rule.cpp.o
+[ 52%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/predicate_placement_rule.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/predicate_reordering_rule.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/predicate_split_up_rule.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/semi_join_reduction_rule.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/stored_table_column_alignment_rule.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/optimizer/strategy/subquery_to_join_rule.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/server/query_handler.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/sql/sql_pipeline_statement.cpp.o
+[ 54%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/sql/sql_translator.cpp.o
+[ 56%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/statistics/cardinality_estimator.cpp.o
+[ 56%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/statistics/join_graph_statistics_cache.cpp.o
+[ 56%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/storage/lqp_view.cpp.o
+make[3]: *** No rule to make target '../src/lib/visualization/serializer/json_serializer.cpp', needed by 'src/lib/CMakeFiles/hyrise_impl.dir/visualization/serializer/json_serializer.cpp.o'.  Stop.
+make[3]: *** Waiting for unfinished jobs....
+[ 56%] Building CXX object src/lib/CMakeFiles/hyrise_impl.dir/storage/prepared_plan.cpp.o
+during RTL pass: dwarf2
+during RTL pass: pro_and_epilogue
+c++: internal compiler error: Bus error signal terminated program cc1plus
+Please submit a full bug report,
+with preprocessed source if appropriate.
+See <file:///usr/share/doc/gcc-9/README.Bugs> for instructions.
+make[3]: *** [src/lib/CMakeFiles/hyrise_impl.dir/build.make:2693: src/lib/CMakeFiles/hyrise_impl.dir/sql/sql_translator.cpp.o] Error 4
+c++: internal compiler error: Bus error signal terminated program cc1plus
+Please submit a full bug report,
+with preprocessed source if appropriate.
+See <file:///usr/share/doc/gcc-9/README.Bugs> for instructions.
+make[3]: *** [src/lib/CMakeFiles/hyrise_impl.dir/build.make:338: src/lib/CMakeFiles/hyrise_impl.dir/expression/evaluation/expression_evaluator.cpp.o] Error 4
+make[2]: *** [CMakeFiles/Makefile2:3357: src/lib/CMakeFiles/hyrise_impl.dir/all] Error 2
+make[1]: *** [CMakeFiles/Makefile2:3179: src/bin/CMakeFiles/hyriseConsole.dir/rule] Error 2
+make: *** [Makefile:1369: hyriseConsole] Error 2
