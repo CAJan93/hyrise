@@ -50,7 +50,7 @@
 #include "../types/is_smart_ptr.hpp"
 #include "../types/is_vector.hpp"
 #include "has_member.hpp"
-#include "json_serializer_parent.hpp"
+#include "json_serializer_util.hpp"
 #include "string.hpp"
 
 namespace opossum {
@@ -73,7 +73,6 @@ class PredicateNode;
 class TableScan;
 class Validate;
 class ValueExpression;
-class JsonSerializerParent;
 
 // TODO(CAJan93): Remove this function. This is from assert.hpp
 template <bool b>
@@ -86,10 +85,9 @@ struct StaticAssert<true> {
   static void stat_assert(const std::string& msg) { (void)msg; }
 };
 
-class JsonSerializer {
+class JsonSerializer : JsonSerializerUtil {
   // convenience alias for inhereted member enum
-  using jsp = JsonSerializerParent;
-  using PredCondExpr = JsonSerializerParent::PredicateConditionExpression;
+  using PredCondExpr = JsonSerializerUtil::PredicateConditionExpression;
 
   /***
   * convert a vector<T> into a json object
@@ -110,8 +108,6 @@ class JsonSerializer {
   // set data in json
   template <typename T>
   static void with_any(jsonVal& data, const std::string& key, const T& val);
-
-  friend class JsonSerializerParent;
 
  public:
   // deserialize
@@ -540,7 +536,7 @@ T JsonSerializer::from_json(const jsonView& data) {
 
             default:
               Fail(JOIN_TO_STR("Unable to convert PredicateConditionExpression ",
-                               magic_enum::enum_name<JsonSerializerParent::PredicateConditionExpression>(
+                               magic_enum::enum_name<JsonSerializerUtil::PredicateConditionExpression>(
                                    resolve_predicate_condition(pred_cond))
                                    .data()));
           }
@@ -735,12 +731,7 @@ jsonVal JsonSerializer::to_json(const T& object) {
       // cast Abstract operators
       auto abstract_op = (const AbstractOperator*)object;
       switch (abstract_op->type()) {
-        case OperatorType::Alias: {
-          const auto alias = dynamic_cast<const AliasOperator*>(abstract_op);
-          std::cout << "AliasOperator" << std::endl;  //  TODO(CAJan93): Remove this debug msg
-          return to_json<AliasOperator>(*alias);
-        }
-
+      
         case OperatorType::Aggregate: {
           const auto abstract_agg = dynamic_cast<const AbstractAggregateOperator*>(abstract_op);
           if (const auto agg_hash = dynamic_cast<const AggregateHash*>(abstract_agg); agg_hash) {
@@ -753,6 +744,12 @@ jsonVal JsonSerializer::to_json(const T& object) {
           }
           Fail("Unable to cast AbastractAggregator to concrete instance");
           return data;
+        }
+
+         case OperatorType::Alias: {
+          const auto alias = dynamic_cast<const AliasOperator*>(abstract_op);
+          std::cout << "AliasOperator" << std::endl;  //  TODO(CAJan93): Remove this debug msg
+          return to_json<AliasOperator>(*alias);
         }
 
         case OperatorType::GetTable: {
@@ -837,7 +834,7 @@ jsonVal JsonSerializer::to_json(const T& object) {
 
             default:
               Fail(JOIN_TO_STR("Unable to convert PredicateConditionExpression ",
-                               magic_enum::enum_name<JsonSerializerParent::PredicateConditionExpression>(
+                               magic_enum::enum_name<JsonSerializerUtil::PredicateConditionExpression>(
                                    resolve_predicate_condition(pred->predicate_condition))
                                    .data()));
           }

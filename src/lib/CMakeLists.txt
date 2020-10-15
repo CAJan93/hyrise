@@ -631,7 +631,7 @@ set(
     utils/tracing/probes.hpp
 
     # skyrise
-    visualization/serializer/json_serializer_parent.cpp
+    visualization/serializer/json_serializer_util.cpp
 
     visualization/abstract_visualizer.hpp
     visualization/join_graph_visualizer.cpp
