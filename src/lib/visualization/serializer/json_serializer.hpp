@@ -73,6 +73,7 @@ class PredicateNode;
 class TableScan;
 class Validate;
 class ValueExpression;
+class JsonSerializerParent;
 
 // TODO(CAJan93): Remove this function. This is from assert.hpp
 template <bool b>
@@ -85,8 +86,9 @@ struct StaticAssert<true> {
   static void stat_assert(const std::string& msg) { (void)msg; }
 };
 
-class JsonSerializer : public JsonSerializerParent {
+class JsonSerializer {
   // convenience alias for inhereted member enum
+  using jsp = JsonSerializerParent;
   using PredCondExpr = JsonSerializerParent::PredicateConditionExpression;
 
   /***
@@ -108,6 +110,8 @@ class JsonSerializer : public JsonSerializerParent {
   // set data in json
   template <typename T>
   static void with_any(jsonVal& data, const std::string& key, const T& val);
+
+  friend class JsonSerializerParent;
 
  public:
   // deserialize

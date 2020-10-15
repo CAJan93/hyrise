@@ -2,13 +2,25 @@
 
 #include <aws/core/utils/json/JsonSerializer.h>
 #include <magic_enum.hpp>
-
 #include <string>
 
+#include "../../operators/abstract_aggregate_operator.hpp"
+#include "../../operators/abstract_operator.hpp"
+#include "../../operators/alias_operator.hpp"
+#include "../../operators/get_table.hpp"
+#include "../../operators/projection.hpp"
+#include "../../operators/table_scan.hpp"
+#include "../../operators/validate.hpp"
 #include "../../utils/assert.hpp"
 #include "../types/is_integral.hpp"
 
 namespace opossum {
+
+class Alias;
+class GetTable;
+class Projection;
+class TableScan;
+class Validate;
 
 // convenience alii for AWS json
 using jsonVal = Aws::Utils::Json::JsonValue;
@@ -50,12 +62,22 @@ class JsonSerializerParent {
   template <typename T>
   static T get_entry_from_json(const jsonView& value, const std::string& key);
 
+  enum class SerializationMode { Serialize, Deserialize };
+
   // represnets the different expression types
   enum class PredicateConditionExpression { Between, BinaryPredicate, In, IsNull };
 
   // mapps a PredicateCondition to the different Expression types
   static JsonSerializerParent::PredicateConditionExpression resolve_predicate_condition(
       const PredicateCondition pred_cond);
+
+  /*
+   * call from_json or to_json, depending if you pass Serialize or Deserialize as the mode
+   * e.g. Will call f<AliasOperator>(args...), if op_t == OperatorType::AliasOperator 
+  */
+  template <typename... Args>
+  auto run_function_on_operator_type(const OperatorType op_t, Args... args,
+                                     JsonSerializerParent::SerializationMode mode);
 
   friend class JsonSerializer;
 };
@@ -105,6 +127,61 @@ T JsonSerializerParent::get_entry_from_json(const jsonView& value, const std::st
   } else {
     Fail(JOIN_TO_STR("Unable to retrieve data from object of type ", typeid(T).name(), newline_spacer, "Data was",
                      newline_spacer, value.WriteReadable(), newline_spacer, "Key was: '", key, "'"));
+  }
+}
+
+template <typename... Args>
+auto JsonSerializerParent::run_function_on_operator_type(const OperatorType op_t, Args... args,
+                                                         JsonSerializerParent::SerializationMode mode) {
+  const bool serialize = mode == SerializationMode::Serialize ? true : false;
+  switch (op_t) {
+    case OperatorType::Alias:
+      if (serialize) {
+        std::cout << "to_json Alias" << std::endl;  // TODO(CAJan93): remove debug msg
+        to_json<AliasOperator>(std::forward<Args>(args)...);
+        return;
+      }
+      std::cout << "to_json Alias" << std::endl;  // TODO(CAJan93): remove debug msg
+      return from_json<AliasOperator>(std::forward<Args>(args)...);
+
+    case OperatorType::GetTable:
+      if (serialize) {
+        std::cout << "to_json GetTable" << std::endl;  // TODO(CAJan93): remove debug msg
+        to_json<GetTable>(std::forward<Args>(args)...);
+        return;
+      }
+      std::cout << "to_json GetTable" << std::endl;  // TODO(CAJan93): remove debug msg
+      return from_json<GetTable>(std::forward<Args>(args)...);
+
+    case OperatorType::Projection:
+      if (serialize) {
+        std::cout << "to_json Projection" << std::endl;  // TODO(CAJan93): remove debug msg
+        to_json<Projection>(std::forward<Args>(args)...);
+        return;
+      }
+      std::cout << "to_json Projection" << std::endl;  // TODO(CAJan93): remove debug msg
+      return from_json<Projection>(std::forward<Args>(args)...);
+
+    case OperatorType::TableScan:
+      if (serialize) {
+        std::cout << "to_json TableScan" << std::endl;  // TODO(CAJan93): remove debug msg
+        to_json<TableScan>(std::forward<Args>(args)...);
+        return;
+      }
+      std::cout << "to_json TableScan" << std::endl;  // TODO(CAJan93): remove debug msg
+      return from_json<TableScan>(std::forward<Args>(args)...);
+
+    case OperatorType::Validate:
+      if (serialize) {
+        std::cout << "to_json Validate" << std::endl;  // TODO(CAJan93): remove debug msg
+        to_json<Validate>(std::forward<Args>(args)...);
+        return;
+      }
+      std::cout << "to_json Validate" << std::endl;  // TODO(CAJan93): remove debug msg
+      return from_json<Validate>(std::forward<Args>(args)...);
+
+    default:
+      Fail(JOIN_TO_STR("Unexprected OperatorType ", magic_enum::enum_name(op_t).data()));
   }
 }
 }  // namespace opossum
