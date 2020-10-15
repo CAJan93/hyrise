@@ -34,6 +34,8 @@ inline constexpr auto JOIN_TO_STR = [](auto... args) -> std::string {
  * Provides utility functions for aws json to the JsonSerializer.
  */
 class JsonSerializerUtil {
+  friend class JsonSerializer;
+
   // used to align error messages after \n char
   static inline const std::string newline_spacer = "\n           ";
 
@@ -63,9 +65,7 @@ class JsonSerializerUtil {
    * e.g. Will call f<AliasOperator>(args...), if op_t == OperatorType::AliasOperator 
   template <typename... Args>
   auto run_function_on_operator_type(const OperatorType op_t, Args... args, JsonSerializerUtil::SerializationMode mode);
-  */
-
-  friend class JsonSerializer;
+  */  
 };
 
 template <typename T, T... S, typename F>

@@ -110,13 +110,22 @@ class JsonSerializer : JsonSerializerUtil {
   template <typename T>
   static void with_any(jsonVal& data, const std::string& key, const T& val);
 
+ public:
+  // deserialize
+  template <typename T>
+  static T from_json(const jsonView& data);
+
+  // serialize from string. Wrapper for from_json
+  template <typename T>
+  static auto from_json_str(const std::string& json_str);
+
   // serialize
   template <typename T>
   static jsonVal to_json(const T& object);
 
-  // deserialize
+  // serialize to string. Wrapper for to_json
   template <typename T>
-  static T from_json(const jsonView& data);
+  static std::string to_json_str(const T& object);
 
   friend JsonSerializerInterface;
 };
@@ -365,7 +374,7 @@ inline void JsonSerializer::with_any(jsonVal& data, const std::string& key, cons
                     std::is_same<without_ref_cv_ptr_t, AbstractExpression>::value ||
                     std::is_same<without_ref_cv_ptr_t, AbstractOperator>::value) {
         // nested (T::properties present)
-        data.WithObject(key, to_json(val));
+        data.WithObject(key, JsonSerializer::to_json(val));
       } else {
         // non-nested (T::properties not present)
         with_any(data, key, *val);
@@ -386,7 +395,7 @@ inline void JsonSerializer::with_any(jsonVal& data, const std::string& key, cons
   } else {
     if constexpr (has_member_properties<T>::value) {
       // nested (T::properties present)
-      data.WithObject(key, to_json(val));
+      data.WithObject(key, JsonSerializer::to_json(val));
     } else {
       with_any(data, key, val);
     }
@@ -725,6 +734,7 @@ jsonVal JsonSerializer::to_json(const T& object) {
       // cast Abstract operators
       auto abstract_op = (const AbstractOperator*)object;
       switch (abstract_op->type()) {
+      
         case OperatorType::Aggregate: {
           const auto abstract_agg = dynamic_cast<const AbstractAggregateOperator*>(abstract_op);
           if (const auto agg_hash = dynamic_cast<const AggregateHash*>(abstract_agg); agg_hash) {
@@ -739,7 +749,7 @@ jsonVal JsonSerializer::to_json(const T& object) {
           return data;
         }
 
-        case OperatorType::Alias: {
+         case OperatorType::Alias: {
           const auto alias = dynamic_cast<const AliasOperator*>(abstract_op);
           std::cout << "AliasOperator" << std::endl;  //  TODO(CAJan93): Remove this debug msg
           return to_json<AliasOperator>(*alias);
@@ -883,4 +893,16 @@ jsonVal JsonSerializer::to_json(const T& object) {
   }
   return data;
 }  // namespace opossum
+
+template <typename T>
+std::string JsonSerializer::to_json_str(const T& object) {
+  return to_json(object).View().WriteReadable();
+}
+
+template <typename T>
+auto JsonSerializer::from_json_str(const std::string& json_str) {
+  const jsonVal data(json_str);
+  const jsonView jv = data.View();
+  return from_json<T>(jv);
+}
 }  // namespace opossum

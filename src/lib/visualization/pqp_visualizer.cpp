@@ -8,7 +8,7 @@
 #include "operators/limit.hpp"
 #include "operators/projection.hpp"
 #include "operators/table_scan.hpp"
-#include "serializer/json_serializer.hpp"
+#include "serializer/json_serializer_api.hpp"
 #include "utils/format_bytes.hpp"
 #include "utils/format_duration.hpp"
 #include "visualization/abstract_visualizer.hpp"
@@ -37,7 +37,7 @@ void PQPVisualizer::_build_subjson(const std::shared_ptr<const AbstractOperator>
 
   std::cout << "Serializing...\n";
   const auto serialize_start = std::chrono::high_resolution_clock::now();
-  const std::string json_str = JsonSerializer::to_json_str(op);
+  const std::string json_str = JsonSerializerInterface::to_json_str(op);
   const auto serialize_end = std::chrono::high_resolution_clock::now();
   auto serialize_duration =
       std::chrono::duration_cast<std::chrono::microseconds>(serialize_end - serialize_start).count();
@@ -46,14 +46,14 @@ void PQPVisualizer::_build_subjson(const std::shared_ptr<const AbstractOperator>
             << "\nDeserializing...";
 
   const auto deserialize_start = std::chrono::high_resolution_clock::now();
-  auto pqp = JsonSerializer::from_json_str<std::shared_ptr<const AbstractOperator>>(json_str);
+  auto pqp = JsonSerializerInterface::from_json_str<std::shared_ptr<const AbstractOperator>>(json_str);
   const auto deserialize_end = std::chrono::high_resolution_clock::now();
   auto deserialize_duration =
       std::chrono::duration_cast<std::chrono::microseconds>(deserialize_end - deserialize_start).count();
 
   std::cout << "\nFinished deserializing in " << deserialize_duration << " μs" << std::endl;
 
-  const std::string json_str_new = JsonSerializer::to_json_str(pqp);
+  const std::string json_str_new = JsonSerializerInterface::to_json_str(pqp);
   std::cout << "Old and new json prepresentation of pqp are equal? " << std::boolalpha << (json_str == json_str_new)
             << '\n';
 
