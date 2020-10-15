@@ -8,7 +8,7 @@
 #include "operators/limit.hpp"
 #include "operators/projection.hpp"
 #include "operators/table_scan.hpp"
-#include "serializer/json_serializer_api.hpp"
+#include "serializer/json_serializer_interface.hpp"
 #include "utils/format_bytes.hpp"
 #include "utils/format_duration.hpp"
 #include "visualization/abstract_visualizer.hpp"

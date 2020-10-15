@@ -1,4 +1,4 @@
-// #include "json_deserializer.hpp"
+#include "json_deserializer.hpp"
 #include "json_serializer.hpp"
 
 namespace opossum {
@@ -20,11 +20,9 @@ std::string JsonSerializerInterface::to_json_str(const T& object) {
 
 template <typename T>
 auto JsonSerializerInterface::from_json_str(const std::string& json_str) {
-  /*const jsonVal data(json_str);
+  const jsonVal data(json_str);
   const jsonView jv = data.View();
-  return from_json<T>(jv);*/ 
-  // TODO(CAJan93)
-  return -1;
+  return JsonDeSerializer::from_json<T>(jv); 
 }
 
 }  // namespace opossum
