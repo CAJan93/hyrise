@@ -132,6 +132,13 @@ class JsonSerializer {
   template <typename T>
   static T get_entry_from_json(const jsonView& value, const std::string& key);
 
+  // represnets the different expression types
+  enum class PredicateConditionExpression { Between, BinaryPredicate, In, IsNull };
+
+  // mapps a PredicateCondition to the different Expression types
+  static JsonSerializer::PredicateConditionExpression resolve_predicate_condition(const PredicateCondition pred_cond);
+
+  // alias for "boost string"
   using string_t =
       std::__cxx11::basic_string<char, std::char_traits<char>, boost::container::pmr::polymorphic_allocator<char>>;
 
@@ -153,6 +160,7 @@ class JsonSerializer {
   static std::string to_json_str(const T& object);
 };
 
+// TODO(CAJan93): write to separate file
 template <typename T>
 void JsonSerializer::key_of_type_exists(const jsonView& value, const std::string& key) {
   Assert(value.KeyExists(key), JOIN_TO_STR("key '", key, "' does not exist in json ", value.WriteReadable()));
@@ -176,6 +184,7 @@ void JsonSerializer::key_of_type_exists(const jsonView& value, const std::string
   }
 }
 
+// TODO(CAJan93): write to separate file
 template <typename T>
 T JsonSerializer::get_entry_from_json(const jsonView& value, const std::string& key) {
   key_of_type_exists<T>(value, key);
@@ -593,48 +602,28 @@ T JsonSerializer::from_json(const jsonView& data) {
           if (!predicate_contition_opt.has_value()) {
             Fail(JOIN_TO_STR("Unable to create enum of type PredicateCondition from string '", predicate_type, "'"));
           }
+
           const PredicateCondition pred_cond = predicate_contition_opt.value();
-
-          switch (pred_cond) {
-            // TODO(CAJan93): simplify this switch case: is_between_expression, is_binary_pred_expr, ...
-            case PredicateCondition::BetweenExclusive:
-            case PredicateCondition::BetweenInclusive:
-            case PredicateCondition::BetweenLowerExclusive:
-            case PredicateCondition::BetweenUpperExclusive: {
-              std::cout << "between expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+          switch (resolve_predicate_condition(pred_cond)) {
+            case JsonSerializer::PredicateConditionExpression::Between:
               return from_json<BetweenExpression*>(data);
-            }
 
-            // TODO(CAJan93): Is this correct? Does the binary pred. expr. cover all these cases?
-            case PredicateCondition::Equals:
-            case PredicateCondition::GreaterThan:
-            case PredicateCondition::GreaterThanEquals:
-            case PredicateCondition::LessThan:
-            case PredicateCondition::LessThanEquals:
-            case PredicateCondition::Like:
-            case PredicateCondition::NotEquals:
-            case PredicateCondition::NotLike: {
-              std::cout << "binary predicate expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+            case JsonSerializer::PredicateConditionExpression::BinaryPredicate:
               return from_json<BinaryPredicateExpression*>(data);
-            }
 
-            case PredicateCondition::In:
-            case PredicateCondition::NotIn: {
-              std::cout << "in expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+            case JsonSerializer::PredicateConditionExpression::In:
               return from_json<InExpression*>(data);
-            }
 
-            case PredicateCondition::IsNotNull:
-            case PredicateCondition::IsNull: {
-              std::cout << "is null expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+            case JsonSerializer::PredicateConditionExpression::IsNull:
               return from_json<IsNullExpression*>(data);
-            }
 
             default:
-              Fail("Unknown ExpressionType");
+              Fail(JOIN_TO_STR("Unable to convert PredicateConditionExpression ",
+                               magic_enum::enum_name<JsonSerializer::PredicateConditionExpression>(
+                                   resolve_predicate_condition(pred_cond))
+                                   .data()));
           }
-          // TODO(CAJan93): Implement AbstractPredicateExpression
-          Fail("AbstractPredicateExpression currently not supported");
+          Fail("Unexpected path reached");
         }
 
         case ExpressionType::PQPSubquery:
@@ -904,47 +893,32 @@ jsonVal JsonSerializer::to_json(const T& object) {
         case ExpressionType::Predicate: {
           const auto pred = dynamic_cast<AbstractPredicateExpression*>(object);
           std::cout << "abstract predicate" << std::endl;  // TODO(CAJan93): Remove debug msg
-          switch (pred->predicate_condition) {
-            case PredicateCondition::BetweenExclusive:
-            case PredicateCondition::BetweenInclusive:
-            case PredicateCondition::BetweenLowerExclusive:
-            case PredicateCondition::BetweenUpperExclusive: {
-              std::cout << "between expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+          switch (resolve_predicate_condition(pred->predicate_condition)) {
+            case JsonSerializer::PredicateConditionExpression::Between: {
               const auto pred_between = dynamic_cast<BetweenExpression*>(object);
               return to_json<BetweenExpression>(*pred_between);
             }
 
-            // TODO(CAJan93): Is this correct? Does the binary pred. expr. cover all these cases?
-            case PredicateCondition::Equals:
-            case PredicateCondition::GreaterThan:
-            case PredicateCondition::GreaterThanEquals:
-            case PredicateCondition::LessThan:
-            case PredicateCondition::LessThanEquals:
-            case PredicateCondition::Like:
-            case PredicateCondition::NotEquals:
-            case PredicateCondition::NotLike: {
-              std::cout << "binary predicate expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+            case JsonSerializer::PredicateConditionExpression::BinaryPredicate: {
               const auto pred_binary = dynamic_cast<BinaryPredicateExpression*>(object);
               return to_json<BinaryPredicateExpression>(*pred_binary);
             }
 
-            case PredicateCondition::In:
-            case PredicateCondition::NotIn: {
-              std::cout << "in expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+            case JsonSerializer::PredicateConditionExpression::In: {
               const auto pred_in = dynamic_cast<InExpression*>(object);
               return to_json<InExpression>(*pred_in);
             }
 
-            case PredicateCondition::IsNotNull:
-            case PredicateCondition::IsNull: {
-              std::cout << "is null expression" << std::endl;  // TODO(CAJan93): Remove debug msg
+            case JsonSerializer::PredicateConditionExpression::IsNull: {
               const auto pred_null = dynamic_cast<IsNullExpression*>(object);
               return to_json<IsNullExpression>(*pred_null);
             }
 
             default:
-              Fail("Unknown ExpressionType");
-              return data;
+              Fail(JOIN_TO_STR("Unable to convert PredicateConditionExpression ",
+                               magic_enum::enum_name<JsonSerializer::PredicateConditionExpression>(
+                                   resolve_predicate_condition(pred->predicate_condition))
+                                   .data()));
           }
         }
 
