@@ -86,6 +86,9 @@ struct StaticAssert<true> {
 };
 
 class JsonSerializer : public JsonSerializerParent {
+  // convenience alias for inhereted member enum
+  using PredCondExpr = JsonSerializerParent::PredicateConditionExpression;
+
   /***
   * convert a vector<T> into a json object
   * {
@@ -519,16 +522,16 @@ T JsonSerializer::from_json(const jsonView& data) {
 
           const PredicateCondition pred_cond = predicate_contition_opt.value();
           switch (resolve_predicate_condition(pred_cond)) {
-            case JsonSerializerParent::PredicateConditionExpression::Between:
+            case PredCondExpr::Between:
               return from_json<BetweenExpression*>(data);
 
-            case JsonSerializerParent::PredicateConditionExpression::BinaryPredicate:
+            case PredCondExpr::BinaryPredicate:
               return from_json<BinaryPredicateExpression*>(data);
 
-            case JsonSerializerParent::PredicateConditionExpression::In:
+            case PredCondExpr::In:
               return from_json<InExpression*>(data);
 
-            case JsonSerializerParent::PredicateConditionExpression::IsNull:
+            case PredCondExpr::IsNull:
               return from_json<IsNullExpression*>(data);
 
             default:
@@ -808,22 +811,22 @@ jsonVal JsonSerializer::to_json(const T& object) {
           const auto pred = dynamic_cast<AbstractPredicateExpression*>(object);
           std::cout << "abstract predicate" << std::endl;  // TODO(CAJan93): Remove debug msg
           switch (resolve_predicate_condition(pred->predicate_condition)) {
-            case JsonSerializerParent::PredicateConditionExpression::Between: {
+            case PredCondExpr::Between: {
               const auto pred_between = dynamic_cast<BetweenExpression*>(object);
               return to_json<BetweenExpression>(*pred_between);
             }
 
-            case JsonSerializerParent::PredicateConditionExpression::BinaryPredicate: {
+            case PredCondExpr::BinaryPredicate: {
               const auto pred_binary = dynamic_cast<BinaryPredicateExpression*>(object);
               return to_json<BinaryPredicateExpression>(*pred_binary);
             }
 
-            case JsonSerializerParent::PredicateConditionExpression::In: {
+            case PredCondExpr::In: {
               const auto pred_in = dynamic_cast<InExpression*>(object);
               return to_json<InExpression>(*pred_in);
             }
 
-            case JsonSerializerParent::PredicateConditionExpression::IsNull: {
+            case PredCondExpr::IsNull: {
               const auto pred_null = dynamic_cast<IsNullExpression*>(object);
               return to_json<IsNullExpression>(*pred_null);
             }
