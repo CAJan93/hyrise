@@ -168,8 +168,8 @@ void JsonSerializer::key_of_type_exists(const jsonView& value, const std::string
     Assert(value.GetObject(key).IsString(), JOIN_TO_STR("value of key '", key, "' is not of string type in json",
                                                         newline_spacer, value.WriteReadable()));
   } else if constexpr (std::is_same<jsonView, T>::value) {
-    Assert(value.GetObject(key).IsObject(), JOIN_TO_STR("value of key '", key, "' is not an object in json",
-                                                        newline_spacer, value.WriteReadable()));
+    Assert(value.GetObject(key).IsObject(),
+           JOIN_TO_STR("value of key '", key, "' is not an object in json", newline_spacer, value.WriteReadable()));
   } else {
     Fail(JOIN_TO_STR("Unable to retrieve data from object of type ", typeid(T).name(), newline_spacer, "Data was",
                      newline_spacer, value.WriteReadable(), newline_spacer, "Key was: '", key, "'"));
@@ -299,8 +299,8 @@ inline T JsonSerializer::as_any(const jsonView& value, const std::string& key) {
       const std::string enum_str = get_entry_from_json<std::string>(value, key);
       auto enum_opt = magic_enum::enum_cast<without_cv_t>(get_entry_from_json<std::string>(value, key));
       if (!enum_opt.has_value()) {
-        Fail(JOIN_TO_STR("Unable to create enum of type ", typeid(without_cv_t).name(), "from string '",
-                         enum_str, "'"));
+        Fail(
+            JOIN_TO_STR("Unable to create enum of type ", typeid(without_cv_t).name(), "from string '", enum_str, "'"));
       }
       return enum_opt.value();
     } else {
@@ -395,30 +395,6 @@ inline T JsonSerializer::as_any(const jsonView& value, const std::string& key) {
 }
 
 template <>
-inline void JsonSerializer::with_any<bool>(jsonVal& data, const std::string& key, const bool& val) {
-  data.WithBool(key, val);
-}
-
-template <>
-inline void JsonSerializer::with_any<int>(jsonVal& data, const std::string& key, const int& val) {
-  data.WithInteger(key, val);
-}
-
-template <>
-inline void JsonSerializer::with_any<std::string>(jsonVal& data, const std::string& key, const std::string& val) {
-  data.WithString(key, val);
-}
-
-template <>
-inline void JsonSerializer::with_any<double>(jsonVal& data, const std::string& key, const double& val) {
-  // TODO(CAJan93): Always Assert that key of type exists
-  // TODO(CAJan93): Write convenience function
-  // TODO(CAJan93): Maybe write WithType<T> this function then does the assertions?
-  // TODO(CAJan93): Check policy Skyrise (assert vs. throw exception)
-  data.WithDouble(key, val);
-}
-
-template <>
 inline void JsonSerializer::with_any<AllTypeVariant>(jsonVal& data, const std::string& key, const AllTypeVariant& val) {
   const unsigned int val_t = val.which();
   jsonVal variant_jv;
@@ -441,8 +417,23 @@ inline void JsonSerializer::with_any<AllTypeVariant>(jsonVal& data, const std::s
 
 template <typename T>
 inline void JsonSerializer::with_any(jsonVal& data, const std::string& key, const T& val) {
-  // process any kind of integral number as int
-  if constexpr (is_integral<T>::value) return with_any<int>(data, key, val);
+  // handle simple types
+  if constexpr (std::is_same<T, bool>::value) {
+    data.WithBool(key, val);
+    return;
+  }
+  if constexpr (std::is_floating_point<T>::value) {
+    data.WithDouble(key, val);
+    return;
+  }
+  if constexpr (is_integral<T>::value) {
+    data.WithInteger(key, val);
+    return;
+  }
+  if constexpr (std::is_same<T, std::string>::value) {
+    data.WithString(key, val);
+    return;
+  }
 
   if constexpr (std::is_pointer<T>::value) {
     if (val == nullptr) {
