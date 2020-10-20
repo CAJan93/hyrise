@@ -6,6 +6,7 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "../visualization/serializer/json_serializer_interface.hpp"
 #include "SQLParser.h"
 #include "create_sql_parser_error_message.hpp"
 #include "expression/value_expression.hpp"
@@ -153,6 +154,19 @@ const std::shared_ptr<AbstractLQPNode>& SQLPipelineStatement::get_optimized_logi
 }
 
 const std::shared_ptr<AbstractOperator>& SQLPipelineStatement::get_physical_plan() {
+  const std::shared_ptr<AbstractOperator>& original_pqp = _get_physical_plan();
+  std::cout << "Serializing PQP to json...\n";
+  const std::string json_str = JsonSerializerInterface::to_json_str(original_pqp);
+  std::cout << "json string is\n" << json_str << '\n';
+
+  std::cout << "Deserializing PQP from json...\n";
+  const std::shared_ptr<AbstractOperator>& pqp_from_json =
+      JsonSerializerInterface::from_json_str<const std::shared_ptr<AbstractOperator>&>(json_str);
+
+  return _get_physical_plan();
+}
+
+const std::shared_ptr<AbstractOperator>& SQLPipelineStatement::_get_physical_plan() {
   if (_physical_plan) {
     return _physical_plan;
   }
