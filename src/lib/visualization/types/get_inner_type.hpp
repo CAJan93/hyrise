@@ -1,12 +1,14 @@
 #pragma once
 namespace opossum {
 namespace details {
-template <typename>
+// default case
+template <typename T>
 struct inner;
 
+// special case for retrieving nested types
 template <template <typename> class outter_t, typename inner_t>
 struct inner<outter_t<inner_t>> {
-  typedef typename std::remove_cv<typename std::remove_reference<inner_t>::type>::type type;
+  typedef typename std::remove_cv_t<std::remove_reference_t<std::remove_cv_t<inner_t>>> type;
 };
 
 template <typename T>
@@ -25,7 +27,7 @@ auto get_vec_element = []() {
  * inner_t i = 1; // int i = 1;
  */
 template <typename _t>
-using get_inner_t = typename details::inner<_t>::type;
+using get_inner_t = typename details::inner<std::remove_cv_t<std::remove_reference_t<std::remove_cv_t<_t>>>>::type;
 
 
 /**
