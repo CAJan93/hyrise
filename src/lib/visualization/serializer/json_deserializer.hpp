@@ -52,6 +52,7 @@
 #include "has_member.hpp"
 #include "json_serializer_util.hpp"
 #include "string.hpp"
+#include "static_assert.hpp"
 
 namespace opossum {
 
@@ -294,7 +295,7 @@ T JsonDeSerializer::from_json(const jsonView& data) {
         "Unique pointers are currently not supported by this json serializer");
     StaticAssert<!is_weak_ptr<without_cv_t>::value>::stat_assert(
         "Weak pointers are currently not supported by this json serializer");
-    std::cout << "is shared ptr" << std::endl;  // TODO(CAJan93): remove debug msg
+    std::cout << "[json deserializer] " <<"is shared ptr" << std::endl;  // TODO(CAJan93): remove debug msg
     typedef T smart_ptr_t;                      // type of the smart pointer
     typedef get_inner_t<smart_ptr_t> inner_t;   // type of the object the pointer is pointing to
     inner_t* object = from_json<inner_t*>(data);
@@ -306,7 +307,7 @@ T JsonDeSerializer::from_json(const jsonView& data) {
     typedef typename std::remove_pointer_t<without_cv_t> without_ptr_t;
 
     if constexpr (std::is_same<AbstractOperator, without_ptr_t>::value) {
-      std::cout << "AbstractOperator" << std::endl;  // TODO(CAJan93) remove debug msg
+      std::cout << "[json deserializer] " <<"AbstractOperator" << std::endl;  // TODO(CAJan93) remove debug msg
 
       Assert(data.KeyExists("_type") || data.KeyExists("type"),
              JOIN_TO_STR("AbstractOperator needs type in order to be casted to concrete operator. Json was ",
@@ -323,14 +324,14 @@ T JsonDeSerializer::from_json(const jsonView& data) {
       const OperatorType operator_type = operator_type_opt.value();
       if (operator_type == OperatorType::Aggregate) {
         if (data.KeyExists("_has_aggregate_functions")) {
-          std::cout << "AggregateHash" << std::endl;  //  TODO(CAJan93): Remove this debug msg
+          std::cout << "[json deserializer] " <<"AggregateHash" << std::endl;  //  TODO(CAJan93): Remove this debug msg
           return from_json<AggregateHash*>(data);
         } else {
-          std::cout << "AggregateSort" << std::endl;  //  TODO(CAJan93): Remove this debug msg
+          std::cout << "[json deserializer] " <<"AggregateSort" << std::endl;  //  TODO(CAJan93): Remove this debug msg
           return from_json<AggregateSort*>(data);
         }
       }
-      std::cout << "OperatorType: " << magic_enum::enum_name(operator_type).data()
+      std::cout << "[json deserializer] " <<"OperatorType: " << magic_enum::enum_name(operator_type).data()
                 << std::endl;  // TODO(CAJan93): remove debug msg
       switch (operator_type) {
         case OperatorType::Alias:
@@ -358,7 +359,7 @@ T JsonDeSerializer::from_json(const jsonView& data) {
       }
 
       const ExpressionType expression_type = expression_type_opt.value();
-      std::cout << "ExpressionType: " << magic_enum::enum_name(expression_type).data()
+      std::cout << "[json deserializer] " <<"ExpressionType: " << magic_enum::enum_name(expression_type).data()
                 << std::endl;  // TODO(CAJan93): remove debug msg
 
       switch (expression_type) {

@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../operators/property.hpp"
-#include "../visualization/serializer/json_serializer.hpp"
 #include "abstract_read_only_operator.hpp"
 #include "all_parameter_variant.hpp"
 #include "expression/abstract_expression.hpp"

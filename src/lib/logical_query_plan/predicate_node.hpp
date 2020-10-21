@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../operators/property.hpp"
-#include "../visualization/serializer/json_serializer.hpp"
 #include "abstract_lqp_node.hpp"
 #include "all_parameter_variant.hpp"
 #include "all_type_variant.hpp"

@@ -3,7 +3,6 @@
 #include <tuple>
 
 #include "../operators/property.hpp"
-#include "../visualization/serializer/json_serializer.hpp"
 #include "abstract_expression.hpp"
 
 #include "storage/table.hpp"

@@ -52,6 +52,7 @@
 #include "has_member.hpp"
 #include "json_serializer_util.hpp"
 #include "string.hpp"
+#include "static_assert.hpp"
 
 namespace opossum {
 
@@ -75,16 +76,7 @@ class Validate;
 class ValueExpression;
 class JsonSerializerInterface;
 
-// TODO(CAJan93): Remove this function. This is from assert.hpp
-template <bool b>
-struct StaticAssert {};
 
-// TODO(CAJan93): Remove this function. This is from assert.hpp
-// template specialized on true
-template <>
-struct StaticAssert<true> {
-  static void stat_assert(const std::string& msg) { (void)msg; }
-};
 
 class JsonSerializer : JsonSerializerUtil {
   // convenience alias for inhereted member enum
@@ -112,7 +104,6 @@ class JsonSerializer : JsonSerializerUtil {
 
   friend JsonSerializerInterface;
 };
-
 
 template <>
 inline void JsonSerializer::with_any<AllTypeVariant>(jsonVal& data, const std::string& key, const AllTypeVariant& val) {
@@ -209,18 +200,25 @@ jsonVal JsonSerializer::to_json(const T& object) {
   typedef typename std::remove_reference_t<without_cv> without_ref_cv_t;
 
   if constexpr (std::is_pointer<without_ref_cv_t>::value) {
+    // add const to pointer to handle both const and non-const raw pointers
+    if constexpr (std::is_same<without_ref_cv_t, AbstractOperator*>::value) {
+      return to_json<const AbstractOperator*>(object);
+    }
+
     if constexpr (std::is_same<without_ref_cv_t, const AbstractOperator*>::value) {
       // cast Abstract operators
       auto abstract_op = (const AbstractOperator*)object;
       switch (abstract_op->type()) {
         case OperatorType::Aggregate: {
-          const auto abstract_agg = dynamic_cast<const AbstractAggregateOperator*>(abstract_op);
-          if (const auto agg_hash = dynamic_cast<const AggregateHash*>(abstract_agg); agg_hash) {
-            std::cout << "Aggregate Hash" << std::endl;  //  TODO(CAJan93): Remove this debug msg
+          auto abstract_agg = dynamic_cast<const AbstractAggregateOperator*>(abstract_op);
+          if (auto agg_hash = dynamic_cast<const AggregateHash*>(abstract_agg); agg_hash) {
+            std::cout << "[json serializer] "
+                      << "Aggregate Hash" << std::endl;  //  TODO(CAJan93): Remove this debug msg
             return to_json<AggregateHash>(*agg_hash);
-          } else if (const auto agg_sort = dynamic_cast<const AggregateSort*>(abstract_agg); agg_sort) {
+          } else if (auto agg_sort = dynamic_cast<const AggregateSort*>(abstract_agg); agg_sort) {
             // TODO(CAJan93): Test this path
-            std::cout << "Aggregate Sort" << std::endl;  //  TODO(CAJan93): Remove this debug msg
+            std::cout << "[json serializer] "
+                      << "Aggregate Sort" << std::endl;  //  TODO(CAJan93): Remove this debug msg
             return to_json<AggregateSort>(*agg_sort);
           }
           Fail("Unable to cast AbastractAggregator to concrete instance");
@@ -228,39 +226,45 @@ jsonVal JsonSerializer::to_json(const T& object) {
         }
 
         case OperatorType::Alias: {
-          const auto alias = dynamic_cast<const AliasOperator*>(abstract_op);
-          std::cout << "AliasOperator" << std::endl;  //  TODO(CAJan93): Remove this debug msg
+          auto alias = dynamic_cast<const AliasOperator*>(abstract_op);
+          std::cout << "[json serializer] "
+                    << "AliasOperator" << std::endl;  //  TODO(CAJan93): Remove this debug msg
           return to_json<AliasOperator>(*alias);
         }
 
         case OperatorType::GetTable: {
-          const auto gt = dynamic_cast<const GetTable*>(abstract_op);
-          std::cout << "GetTable" << std::endl;  //  TODO(CAJan93): Remove this debug msg
+          auto gt = dynamic_cast<const GetTable*>(abstract_op);
+          std::cout << "[json serializer] "
+                    << "GetTable" << std::endl;  //  TODO(CAJan93): Remove this debug msg
           return to_json<GetTable>(*gt);
         }
 
         // TODO(CAJan93): Check if I am using the corret limit class
         case OperatorType::Limit: {
-          const auto limit = dynamic_cast<const Limit*>(abstract_op);
-          std::cout << "limit" << std::endl;  // TODO(CAJan93): Remove this debug msg
+          auto limit = dynamic_cast<const Limit*>(abstract_op);
+          std::cout << "[json serializer] "
+                    << "limit" << std::endl;  // TODO(CAJan93): Remove this debug msg
           return to_json<Limit>(*limit);
         }
 
         case OperatorType::Projection: {
-          const auto projection = dynamic_cast<const Projection*>(abstract_op);
-          std::cout << "projection" << std::endl;  // TODO(CAJan93): Remove this debug msg
+          auto projection = dynamic_cast<const Projection*>(abstract_op);
+          std::cout << "[json serializer] "
+                    << "projection" << std::endl;  // TODO(CAJan93): Remove this debug msg
           return to_json<Projection>(*projection);
         }
 
         case OperatorType::TableScan: {
-          const auto table_scan = dynamic_cast<const TableScan*>(abstract_op);
-          std::cout << "TableScan" << std::endl;  // TODO(CAJan93): Remove this debug msg
+          auto table_scan = dynamic_cast<const TableScan*>(abstract_op);
+          std::cout << "[json serializer] "
+                    << "TableScan" << std::endl;  // TODO(CAJan93): Remove this debug msg
           return to_json<TableScan>(*table_scan);
         }
 
         case OperatorType::Validate: {
-          const auto validate = dynamic_cast<const Validate*>(abstract_op);
-          std::cout << "Validate" << std::endl;  // TODO(CAJan93): Remove this debug msg
+          auto validate = dynamic_cast<const Validate*>(abstract_op);
+          std::cout << "[json serializer] "
+                    << "Validate" << std::endl;  // TODO(CAJan93): Remove this debug msg
           return to_json<Validate>(*validate);
           return data;
         }
@@ -268,7 +272,8 @@ jsonVal JsonSerializer::to_json(const T& object) {
         default: {
           // TODO(CAJan93) remove below code
           auto t = abstract_op->type();
-          std::cout << "default OperatorType, with type" << newline_spacer << magic_enum::enum_name(t).data() << '\n';
+          std::cout << "[json serializer] "
+                    << "default OperatorType, with type" << newline_spacer << magic_enum::enum_name(t).data() << '\n';
         }
       }
       return data;
@@ -279,19 +284,22 @@ jsonVal JsonSerializer::to_json(const T& object) {
 
         case ExpressionType::Arithmetic: {
           const auto arithmetic_expr = dynamic_cast<ArithmeticExpression*>(object);
-          std::cout << "Arithmetic expression" << std::endl;  // TODO(CAJan93): Remove this debug msg
+          std::cout << "[json serializer] "
+                    << "Arithmetic expression" << std::endl;  // TODO(CAJan93): Remove this debug msg
           return to_json<ArithmeticExpression>(*arithmetic_expr);
         }
 
         case ExpressionType::PQPColumn: {
           const auto pqp_col = dynamic_cast<PQPColumnExpression*>(object);
-          std::cout << "PQPColumn expression" << std::endl;  // TODO(CAJan93): Remove this debug msg
+          std::cout << "[json serializer] "
+                    << "PQPColumn expression" << std::endl;  // TODO(CAJan93): Remove this debug msg
           return to_json<PQPColumnExpression>(*pqp_col);
         }
 
         case ExpressionType::Predicate: {
           const auto pred = dynamic_cast<AbstractPredicateExpression*>(object);
-          std::cout << "abstract predicate" << std::endl;  // TODO(CAJan93): Remove debug msg
+          std::cout << "[json serializer] "
+                    << "abstract predicate" << std::endl;  // TODO(CAJan93): Remove debug msg
           switch (resolve_predicate_condition(pred->predicate_condition)) {
             case PredCondExpr::Between: {
               const auto pred_between = dynamic_cast<BetweenExpression*>(object);
@@ -328,13 +336,15 @@ jsonVal JsonSerializer::to_json(const T& object) {
 
         case ExpressionType::Value: {
           const auto val_expr = dynamic_cast<ValueExpression*>(object);
-          std::cout << "Value expression\n";  // TODO(CAJan93): remove debug msg
+          std::cout << "[json serializer] "
+                    << "Value expression\n";  // TODO(CAJan93): remove debug msg
           return to_json<ValueExpression>(*val_expr);
         }
 
         default:
           // TODO(CAJan93): Handle the other ExpressionTypes
-          std::cout << "Failure. Unsupported ExpressionType " << magic_enum::enum_name(object->type).data() << '\n';
+          std::cout << "[json serializer] "
+                    << "Failure. Unsupported ExpressionType " << magic_enum::enum_name(object->type).data() << '\n';
           return data;
           break;
       }
@@ -363,7 +373,8 @@ jsonVal JsonSerializer::to_json(const T& object) {
     return data;
   } else if constexpr (has_member__type<without_ref_cv_t>::value) {
     // TODO(CAJan93): remove this case? If so, remove has_member__type?
-    std::cout << "type is " << magic_enum::enum_name(object.type()).data() << " is currently not supported.\n";
+    std::cout << "[json serializer] "
+              << "type is " << magic_enum::enum_name(object.type()).data() << " is currently not supported.\n";
     return data;
   } else {
     Fail(JOIN_TO_STR("unsupported type ", typeid(object).name(), newline_spacer, "typeid T: ", typeid(T).name(),
