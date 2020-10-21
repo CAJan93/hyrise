@@ -151,7 +151,7 @@ class AggregateHash : public AbstractAggregateOperator {
   bool _has_aggregate_functions;
 
  public:
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       /* TODO(CAJan93): Support these?
       property(&AggregateHash::_groupby_segments, "_groupby_segments"),
       property(&AggregateHash::_contexts_per_column, "_contexts_per_column"),,

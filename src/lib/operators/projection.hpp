@@ -64,7 +64,7 @@ class Projection : public AbstractReadOnlyOperator {
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members. Done?
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       // TODO(CAJan93): include expression
       property(&Projection::_left_input, "_left_input"), property(&Projection::expressions, "expressions"),
       // From AbstractReadOnlyOperator

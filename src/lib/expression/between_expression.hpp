@@ -25,7 +25,7 @@ class BetweenExpression : public AbstractPredicateExpression {
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members. Done?
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       // from AbstractPredicateExpression
       property(&BetweenExpression::predicate_condition, "predicate_condition"),
       // From AbstractExpression

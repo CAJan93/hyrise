@@ -26,7 +26,7 @@ class ValueExpression : public AbstractExpression {
   bool _on_is_nullable_on_lqp(const AbstractLQPNode& lqp) const override;
 
  public:
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       // TODO(CAJan93): support value
       property(&ValueExpression::value, "value"),
       // From AbstractExpression

@@ -42,7 +42,7 @@ class PQPColumnExpression : public AbstractExpression {
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members. Done?
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       property(&PQPColumnExpression::column_id, "column_id"), property(&PQPColumnExpression::_data_type, "_data_type"),
       property(&PQPColumnExpression::_nullable, "_nullable"),
       property(&PQPColumnExpression::_column_name, "_column_name"),

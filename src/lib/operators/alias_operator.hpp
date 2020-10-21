@@ -31,7 +31,7 @@ class AliasOperator : public AbstractReadOnlyOperator {
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members. Done?
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       property(&AliasOperator::_left_input, "_left_input"), property(&AliasOperator::_column_ids, "_column_ids"),
       property(&AliasOperator::_aliases, "_aliases"),
       // From AbstractReadOnlyOperator

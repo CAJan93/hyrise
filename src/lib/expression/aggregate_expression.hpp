@@ -34,7 +34,7 @@ class AggregateExpression : public AbstractExpression {
   bool _on_is_nullable_on_lqp(const AbstractLQPNode& lqp) const override;
 
  public:
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       property(&AggregateExpression::aggregate_function, "aggregate_function"),
       // from AbstractExpression
       property(&AggregateExpression::arguments, "arguments"), property(&AggregateExpression::type, "type"));

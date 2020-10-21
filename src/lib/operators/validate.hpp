@@ -52,7 +52,7 @@ class Validate : public AbstractReadOnlyOperator {
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members.
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       property(&Validate::_left_input, "_left_input"),
       /*property(&Validate::_can_use_chunk_shortcut, "_can_use_chunk_shortcut"),*/
       // from AbstractOperator via AbstractReadOnlyOperator

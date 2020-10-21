@@ -43,7 +43,7 @@ class PredicateNode : public EnableMakeForLQPNode<PredicateNode>, public Abstrac
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members.
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       property(&PredicateNode::scan_type, "scan_type"),
       // from AbstractLQPNode
       property(&PredicateNode::type, "type"), property(&PredicateNode::node_expressions, "node_expressions"),

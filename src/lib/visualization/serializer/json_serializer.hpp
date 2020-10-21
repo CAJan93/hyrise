@@ -152,13 +152,13 @@ inline void JsonSerializer::with_any(jsonVal& data, const std::string& key, cons
     } else {
       // const AbstractOperator* const&
       typedef typename std::remove_reference_t<std::remove_cv_t<std::remove_pointer_t<T>>> without_ref_cv_ptr_t;
-      if constexpr (has_member_properties<without_ref_cv_ptr_t>::value ||
+      if constexpr (has_member_json_serializer_properties<without_ref_cv_ptr_t>::value ||
                     std::is_same<without_ref_cv_ptr_t, AbstractExpression>::value ||
                     std::is_same<without_ref_cv_ptr_t, AbstractOperator>::value) {
-        // nested (T::properties present)
+        // nested (T::json_serializer_properties present)
         data.WithObject(key, to_json(val));
       } else {
-        // non-nested (T::properties not present)
+        // non-nested (T::json_serializer_properties not present)
         with_any(data, key, *val);
       }
     }
@@ -175,8 +175,8 @@ inline void JsonSerializer::with_any(jsonVal& data, const std::string& key, cons
     const std::string enum_name = magic_enum::enum_name(val).data();
     data.WithString(key, enum_name);
   } else {
-    if constexpr (has_member_properties<T>::value) {
-      // nested (T::properties present)
+    if constexpr (has_member_json_serializer_properties<T>::value) {
+      // nested (T::json_serializer_properties present)
       data.WithObject(key, to_json(val));
     } else {
       with_any(data, key, val);
@@ -363,11 +363,11 @@ jsonVal JsonSerializer::to_json(const T& object) {
     StaticAssert<!is_unique_ptr<without_ref_cv_t>::value>::stat_assert(
         "Unique pointers are currently not supported by this json serializer");
     return to_json(object.get());  // keep const qualifier, since get() might return a const pointer
-  } else if constexpr (has_member_properties<without_ref_cv_t>::value) {
+  } else if constexpr (has_member_json_serializer_properties<without_ref_cv_t>::value) {
     // serialize a class that provides properties tuple
-    constexpr auto nb_properties = std::tuple_size<decltype(without_ref_cv_t::properties)>::value;
+    constexpr auto nb_properties = std::tuple_size<decltype(without_ref_cv_t::json_serializer_properties)>::value;
     for_sequence(std::make_index_sequence<nb_properties>{}, [&](auto i) {
-      constexpr auto property = std::get<i>(without_ref_cv_t::properties);
+      constexpr auto property = std::get<i>(without_ref_cv_t::json_serializer_properties);
       with_any(data, property.name, object.*(property.member));
     });
     return data;

@@ -37,7 +37,7 @@ class ArithmeticExpression : public AbstractExpression {
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members. Done?
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       // from AbstractPredicateExpression
       property(&ArithmeticExpression::arithmetic_operator, "arithmetic_operator"),
       // From AbstractExpression

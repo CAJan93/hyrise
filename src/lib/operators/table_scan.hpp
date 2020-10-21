@@ -100,7 +100,7 @@ class TableScan : public AbstractReadOnlyOperator {
 
  public:
   // TODO(CAJan93): Support all relevant members, including parent members.
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       /*property(&TableScan::excluded_chunk_ids, "excluded_chunk_ids"),
       property(&TableScan::_impl, "_impl"),*/
       property(&TableScan::_left_input, "_left_input"), property(&TableScan::_predicate, "_predicate"),

@@ -144,7 +144,7 @@ inline T JsonDeSerializer::as_any(const jsonView& value, const std::string& key)
       return nullptr;
     }
     if (value.GetObject(key).IsObject()) {
-      if constexpr (has_member_properties<without_cv_value_t>::value ||
+      if constexpr (has_member_json_serializer_properties<without_cv_value_t>::value ||
                     std::is_same<without_cv_value_t, AbstractOperator>::value ||
                     std::is_same<without_cv_value_t, AbstractExpression>::value) {
         // handle nested object (pointer)
@@ -196,7 +196,7 @@ inline T JsonDeSerializer::as_any(const jsonView& value, const std::string& key)
       return enum_opt.value();
     } else {
       if (value.GetObject(key).IsObject()) {
-        if constexpr (has_member_properties<without_cv_t>::value) {
+        if constexpr (has_member_json_serializer_properties<without_cv_t>::value) {
           // handle nested object (pointer or non-pointer
           key_of_type_exists<jsonVal>(value, key);
           jsonView sub_json = get_entry_from_json<jsonView>(value, key);
@@ -214,7 +214,7 @@ inline T JsonDeSerializer::as_any(const jsonView& value, const std::string& key)
             typedef std::remove_pointer_t<without_cv_vec_inner_t> without_ptr_without_cv_vec_inner_t;
             for (size_t idx = 0; obj.KeyExists(std::to_string(idx)); ++idx) {
               const jsonView data = get_entry_from_json<jsonView>(obj, std::to_string(idx));
-              if constexpr (has_member_properties<without_ptr_without_cv_vec_inner_t>::value) {
+              if constexpr (has_member_json_serializer_properties<without_ptr_without_cv_vec_inner_t>::value) {
                 without_ptr_without_cv_vec_inner_t* tmp = from_json<without_cv_vec_inner_t>(data);
                 vec.emplace_back(tmp);  // serializer only supports vectors and no other containers
               } else if constexpr (std::is_same<without_ptr_without_cv_vec_inner_t, int>::value) {
@@ -243,7 +243,7 @@ inline T JsonDeSerializer::as_any(const jsonView& value, const std::string& key)
                 smart_ptr_inner_t;  // type of the object the pointer is pointing to
             for (size_t idx = 0; obj.KeyExists(std::to_string(idx)); ++idx) {
               const jsonView data = get_entry_from_json<jsonView>(obj, std::to_string(idx));
-              //  if constexpr (has_member_properties<without_cv_vec_inner_t>::value) {
+              //  if constexpr (has_member_json_serializer_properties<without_cv_vec_inner_t>::value) {
               smart_ptr_inner_t* t = from_json<smart_ptr_inner_t*>(data);
               smart_ptr_t ptr(t);
               vec.emplace_back(ptr);
@@ -251,7 +251,7 @@ inline T JsonDeSerializer::as_any(const jsonView& value, const std::string& key)
           } else {
             for (size_t idx = 0; obj.KeyExists(std::to_string(idx)); ++idx) {
               const jsonView data = obj.GetObject(std::to_string(idx));
-              if constexpr (has_member_properties<without_cv_vec_inner_t>::value) {
+              if constexpr (has_member_json_serializer_properties<without_cv_vec_inner_t>::value) {
                 vec.emplace_back(from_json<without_cv_vec_inner_t>(
                     data));  // serializer only supports vectors and no other containers
               } else if constexpr (is_integral<without_cv_vec_inner_t>::value) {
@@ -434,10 +434,10 @@ T JsonDeSerializer::from_json(const jsonView& data) {
       Fail("not implemented");
     } else if constexpr (std::is_same<AggregateExpression, without_ptr_t>::value ||
                          std::is_same<IsNullExpression, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_0)::Type property_0_t;
 
-      constexpr auto property_1 = std::get<1>(without_ptr_t::properties);
+      constexpr auto property_1 = std::get<1>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_1)::Type property_1_t;
 
       if constexpr (is_raw_ptr) {
@@ -450,10 +450,10 @@ T JsonDeSerializer::from_json(const jsonView& data) {
       }
     } else if constexpr (std::is_same<ArithmeticExpression, without_ptr_t>::value ||
                          std::is_same<BinaryPredicateExpression, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_0)::Type property_0_t;
 
-      constexpr auto property_1 = std::get<1>(without_ptr_t::properties);
+      constexpr auto property_1 = std::get<1>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_1)::Type property_1_t;
 
       if constexpr (is_raw_ptr) {
@@ -467,10 +467,10 @@ T JsonDeSerializer::from_json(const jsonView& data) {
         return t;
       }
     } else if constexpr (std::is_same<BetweenExpression, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_0)::Type property_0_t;
 
-      constexpr auto property_1 = std::get<1>(without_ptr_t::properties);
+      constexpr auto property_1 = std::get<1>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_1)::Type property_1_t;
       if constexpr (is_raw_ptr) {
         without_cv_t t = new without_ptr_t(
@@ -484,16 +484,16 @@ T JsonDeSerializer::from_json(const jsonView& data) {
         return t;
       }
     } else if constexpr (std::is_same<PQPColumnExpression, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_0)::Type property_0_t;
 
-      constexpr auto property_1 = std::get<1>(without_ptr_t::properties);
+      constexpr auto property_1 = std::get<1>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_1)::Type property_1_t;
 
-      constexpr auto property_2 = std::get<2>(without_ptr_t::properties);
+      constexpr auto property_2 = std::get<2>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_2)::Type property_2_t;
 
-      constexpr auto property_3 = std::get<3>(without_ptr_t::properties);
+      constexpr auto property_3 = std::get<3>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_3)::Type property_3_t;
 
       if constexpr (is_raw_ptr) {
@@ -507,7 +507,7 @@ T JsonDeSerializer::from_json(const jsonView& data) {
         return t;
       }
     } else if constexpr (std::is_same<ValueExpression, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_0)::Type property_0_t;
 
       if constexpr (is_raw_ptr) {
@@ -518,13 +518,13 @@ T JsonDeSerializer::from_json(const jsonView& data) {
         return t;
       }
     } else if constexpr (std::is_same<GetTable, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_0)::Type property_0_t;
 
-      constexpr auto property_1 = std::get<1>(without_ptr_t::properties);
+      constexpr auto property_1 = std::get<1>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_1)::Type property_1_t;
 
-      constexpr auto property_2 = std::get<2>(without_ptr_t::properties);
+      constexpr auto property_2 = std::get<2>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_2)::Type property_2_t;
 
       if constexpr (is_raw_ptr) {
@@ -542,14 +542,14 @@ T JsonDeSerializer::from_json(const jsonView& data) {
     else if constexpr (std::is_same<AggregateHash, without_ptr_t>::value ||
                        std::is_same<AggregateSort, without_ptr_t>::value ||
                        std::is_same<AliasOperator, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       // typedef typename decltype(property_0) property_0_t; // TODO(CAJan93): do not hardcode this
       typedef typename std::shared_ptr<AbstractOperator> property_0_t;
 
-      constexpr auto property_1 = std::get<1>(without_ptr_t::properties);
+      constexpr auto property_1 = std::get<1>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_1)::Type property_1_t;
 
-      constexpr auto property_2 = std::get<2>(without_ptr_t::properties);
+      constexpr auto property_2 = std::get<2>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_2)::Type property_2_t;
 
       if constexpr (is_raw_ptr) {
@@ -564,10 +564,10 @@ T JsonDeSerializer::from_json(const jsonView& data) {
       }
     } else if constexpr (std::is_same<Projection, without_ptr_t>::value ||
                          std::is_same<TableScan, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_0)::Type property_0_t;
 
-      constexpr auto property_1 = std::get<1>(without_ptr_t::properties);
+      constexpr auto property_1 = std::get<1>(without_ptr_t::json_serializer_properties);
       typedef typename decltype(property_1)::Type property_1_t;
       if constexpr (is_raw_ptr) {
         without_cv_t t =
@@ -578,7 +578,7 @@ T JsonDeSerializer::from_json(const jsonView& data) {
         return t;
       }
     } else if constexpr (std::is_same<Validate, without_ptr_t>::value) {
-      constexpr auto property_0 = std::get<0>(without_ptr_t::properties);
+      constexpr auto property_0 = std::get<0>(without_ptr_t::json_serializer_properties);
       // typedef typename decltype(property_0) property_0_t; // TODO(CAJan93): do not hardcode this
       typedef typename std::shared_ptr<AbstractOperator> property_0_t;
 

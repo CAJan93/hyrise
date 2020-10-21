@@ -12,35 +12,35 @@ namespace opossum {
  * Helper structs have provide the required type as default.
  */
 namespace details {
-struct has_member_properties_helper {
-  int properties;
+struct has_member_json_serializer_properties_helper {
+  int json_serializer_properties;
 };
 
 /**
- * True if T has attribute properties (even if properties is a private member of T)
+ * True if T has attribute json_serializer_properties (even if json_serializer_properties is a private member of T)
  * 
  * Usage: 
- * if constexpr (has_member_properties<SomeClass>::value) {
- *  // use SomeClass::properties
+ * if constexpr (has_member_json_serializer_properties<SomeClass>::value) {
+ *  // use SomeClass::json_serializer_properties
  * } else {
- *  // SomeClass does not have properties member
+ *  // SomeClass does not have json_serializer_properties member
  * }
  */
 template <typename T>
-class has_member_properties : public T, has_member_properties_helper {
+class has_member_json_serializer_properties : public T, has_member_json_serializer_properties_helper {
   /**
-   * if T has properties member, has_member_properties will inherit properties member
-   * from T and has_member_properties_helper. This is invalid. Check will be discared
+   * if T has json_serializer_properties member, has_member_json_serializer_properties will inherit json_serializer_properties member
+   * from T and has_member_json_serializer_properties_helper. This is invalid. Check will be discared
    * based on SFINAE. If that happens, only true type will remain.
   */
-  template <typename U = has_member_properties, typename = decltype(U::properties)>
+  template <typename U = has_member_json_serializer_properties, typename = decltype(U::json_serializer_properties)>
   static constexpr std::false_type check(int);
 
   // will be called on check(0), if check(int) does not exist
   static constexpr std::true_type check(long);
 
-  /***
-   * If T does not have member properties, then both check(int) and check(long)
+  /**
+   * If T does not have member json_serializer_properties, then both check(int) and check(long)
    * will remain. Type will be false type, because it uses check(int) since we pass 0.
    */
   using type = decltype(check(0));
@@ -54,13 +54,13 @@ struct has_member__type_helper {
 };
 
 /**
- * True if T has attribute properties (even if _type is a private member of T)
+ * True if T has attribute json_serializer_properties (even if _type is a private member of T)
  * 
  * Usage: 
- * if constexpr (has_member_properties<SomeClass>::value) {
+ * if constexpr (has_member_json_serializer_properties<SomeClass>::value) {
  *  // use SomeClass::_type
  * } else {
- *  // SomeClass does not have properties member
+ *  // SomeClass does not have json_serializer_properties member
  * }
  */
 template <typename T>
@@ -77,12 +77,12 @@ class has_member__type : public T, has_member__type_helper {
 };
 }  // namespace details
 
-// wraps details::has_member_properties, to prevent error by inheriting from a non-class type
+// wraps details::has_member_json_serializer_properties, to prevent error by inheriting from a non-class type
 template <typename T>
-struct has_member_properties {
+struct has_member_json_serializer_properties {
   static constexpr auto value = []() {
     if constexpr (std::is_class<T>::value) {
-      return details::has_member_properties<T>::value;
+      return details::has_member_json_serializer_properties<T>::value;
     } else {
       return false;
     }

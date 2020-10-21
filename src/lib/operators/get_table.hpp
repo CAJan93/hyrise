@@ -49,7 +49,7 @@ class GetTable : public AbstractReadOnlyOperator {
   const std::vector<ColumnID> _pruned_column_ids;
 
  public:
-  inline constexpr static auto properties =
+  inline constexpr static auto json_serializer_properties =
       std::make_tuple(property(&GetTable::_name, "_name"), property(&GetTable::_pruned_chunk_ids, "_pruned_chunk_ids"),
                       property(&GetTable::_pruned_column_ids, "_pruned_column_ids"),
                       // from AbstractOperator via AbstractReadOnlyOperator

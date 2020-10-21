@@ -126,7 +126,7 @@ class AggregateSort : public AbstractAggregateOperator {
   static Segments _get_segments_of_chunk(const std::shared_ptr<const Table>& input_table, ChunkID chunk_id);
 
  public:
-  inline constexpr static auto properties = std::make_tuple(
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
       // from AbstractAggregateOperator
       // TODO(CAJan93): Support this attribute?
       property(&AggregateSort::_right_input, "_right_input"), property(&AggregateSort::_aggregates, "_aggregates"),
