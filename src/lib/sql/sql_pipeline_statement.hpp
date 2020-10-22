@@ -77,9 +77,7 @@ class SQLPipelineStatement : public Noncopyable {
   // Returns the optimized LQP for this statement.
   const std::shared_ptr<AbstractLQPNode>& get_optimized_logical_plan();
 
-  // Returns the PQP for this statement.
-  // The physical plan is either retrieved from the SQLPhysicalPlanCache or, if unavailable, translated from the
-  // optimized LQP.
+  // wrapper for get_physical_plan. Runs PQP through json serializer and deserializer for testing
   const std::shared_ptr<AbstractOperator>& get_physical_plan();
 
   // Returns all tasks that need to be executed for this query.
@@ -104,6 +102,11 @@ class SQLPipelineStatement : public Noncopyable {
   const std::shared_ptr<SQLLogicalPlanCache> lqp_cache;
 
  private:
+    // Returns the PQP for this statement.
+  // The physical plan is either retrieved from the SQLPhysicalPlanCache or, if unavailable, translated from the
+  // optimized LQP.
+  const std::shared_ptr<AbstractOperator>& _get_physical_plan();
+
   bool _is_transaction_statement();
 
   // Returns the tasks that execute transaction statements

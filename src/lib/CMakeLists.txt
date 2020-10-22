@@ -629,6 +629,10 @@ set(
     utils/timer.cpp
     utils/timer.hpp
     utils/tracing/probes.hpp
+
+    # skyrise
+    visualization/serializer/json_serializer_util.cpp
+
     visualization/abstract_visualizer.hpp
     visualization/join_graph_visualizer.cpp
     visualization/join_graph_visualizer.hpp
@@ -643,6 +647,9 @@ set(
 
 set(
     LIBRARIES
+    # skyrise libs
+    aws-cpp-sdk-core
+
     lz4
     sqlparser
     uninitialized_vector

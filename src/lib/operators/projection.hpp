@@ -12,6 +12,7 @@
 
 #include "abstract_read_only_operator.hpp"
 #include "expression/abstract_expression.hpp"
+#include "property.hpp"
 
 namespace opossum {
 
@@ -60,6 +61,19 @@ class Projection : public AbstractReadOnlyOperator {
   std::shared_ptr<AbstractOperator> _on_deep_copy(
       const std::shared_ptr<AbstractOperator>& copied_left_input,
       const std::shared_ptr<AbstractOperator>& copied_right_input) const override;
+
+ public:
+  // TODO(CAJan93): Support all relevant members, including parent members. Done?
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
+      // TODO(CAJan93): include expression
+      property(&Projection::_left_input, "_left_input"), property(&Projection::expressions, "expressions"),
+      // From AbstractReadOnlyOperator
+      // TODO(CAJan93): performance_data not supported
+      // TODO(CAJan93): _output not supported
+      // TODO(CAJan93): _transaction_context not supported
+      // // No support for lqp_node
+      property(&Projection::_type, "_type")
+      /*, property(&Projection::_right_input, "_right_input")*/);
 };
 
 }  // namespace opossum

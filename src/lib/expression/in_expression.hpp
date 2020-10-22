@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../operators/property.hpp"
 #include "abstract_predicate_expression.hpp"
 
 namespace opossum {
@@ -23,6 +24,14 @@ class InExpression : public AbstractPredicateExpression {
 
   std::shared_ptr<AbstractExpression> deep_copy() const override;
   std::string description(const DescriptionMode mode) const override;
+
+ public:
+  // TODO(CAJan93): Support all relevant members, including parent members. Done?
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
+      // from AbstractPredicateExpression
+      property(&InExpression::predicate_condition, "predicate_condition"),
+      // From AbstractExpression
+      property(&InExpression::arguments, "arguments"), property(&InExpression::type, "type"));
 };
 
 }  // namespace opossum

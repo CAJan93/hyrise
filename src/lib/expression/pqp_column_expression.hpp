@@ -1,5 +1,8 @@
 #pragma once
 
+#include <tuple>
+
+#include "../operators/property.hpp"
 #include "abstract_expression.hpp"
 
 #include "storage/table.hpp"
@@ -34,6 +37,17 @@ class PQPColumnExpression : public AbstractExpression {
   const DataType _data_type;
   const bool _nullable;
   const std::string _column_name;
+
+  friend class JsonSerializer;
+
+ public:
+  // TODO(CAJan93): Support all relevant members, including parent members. Done?
+  inline constexpr static auto json_serializer_properties = std::make_tuple(
+      property(&PQPColumnExpression::column_id, "column_id"), property(&PQPColumnExpression::_data_type, "_data_type"),
+      property(&PQPColumnExpression::_nullable, "_nullable"),
+      property(&PQPColumnExpression::_column_name, "_column_name"),
+      // from AbstractExpression
+      property(&PQPColumnExpression::arguments, "arguments"), property(&PQPColumnExpression::type, "type"));
 };
 
 }  // namespace opossum
